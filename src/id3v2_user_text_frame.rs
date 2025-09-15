@@ -1,25 +1,31 @@
+use std::fmt;
+
 /// User-Defined Text Information Frame (TXXX)
 ///
 /// Structure: Text encoding + Description + Value
 use crate::id3v2_text_encoding::{TextEncoding, split_terminated_text};
-use std::fmt;
 
 #[derive(Debug, Clone)]
-pub struct UserTextFrame {
-    pub encoding: TextEncoding,
+pub struct UserTextFrame
+{
+    pub encoding:    TextEncoding,
     pub description: String,
-    pub value: String,
+    pub value:       String
 }
 
-impl UserTextFrame {
+impl UserTextFrame
+{
     /// Parse a TXXX frame from raw data
-    pub fn parse(data: &[u8]) -> Result<Self, String> {
-        if data.is_empty() {
+    pub fn parse(data: &[u8]) -> Result<Self, String>
+    {
+        if data.is_empty()
+        {
             return Err("User text frame data is empty".to_string());
         }
 
         let encoding = TextEncoding::from_byte(data[0])?;
-        if data.len() < 2 {
+        if data.len() < 2
+        {
             return Err("User text frame data too short".to_string());
         }
 
@@ -30,8 +36,10 @@ impl UserTextFrame {
     }
 }
 
-impl fmt::Display for UserTextFrame {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for UserTextFrame
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
         writeln!(f, "Encoding: {}", self.encoding)?;
         writeln!(f, "Description: \"{}\"", self.description)?;
         writeln!(f, "Value: \"{}\"", self.value)?;

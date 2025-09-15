@@ -1,8 +1,10 @@
-use crate::cli::DebugOptions;
 use std::fs::File;
 
+use crate::cli::DebugOptions;
+
 /// Common trait for all media file dissectors
-pub trait MediaDissector {
+pub trait MediaDissector
+{
     /// The type of media this dissector handles
     fn media_type(&self) -> &'static str;
 

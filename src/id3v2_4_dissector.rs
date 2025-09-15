@@ -1,29 +1,31 @@
-use crate::cli::DebugOptions;
-use crate::id3v2_frame::Id3v2Frame;
-use crate::id3v2_tools::*;
-use crate::media_dissector::MediaDissector;
+use std::{fs::File, io::Read};
+
 use owo_colors::OwoColorize;
-use std::fs::File;
-use std::io::Read;
+
+use crate::{cli::DebugOptions, id3v2_frame::Id3v2Frame, id3v2_tools::*, media_dissector::MediaDissector};
 
 /// ID3v2.4 dissector for MP3 files
 pub struct Id3v24Dissector;
 
 /// Parse an ID3v2.4 frame from raw buffer data
-pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame> {
-    if pos + 10 > buffer.len() {
+pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame>
+{
+    if pos + 10 > buffer.len()
+    {
         return None;
     }
 
     let frame_id = String::from_utf8_lossy(&buffer[pos..pos + 4]).to_string();
 
     // Stop if we hit padding (null bytes)
-    if frame_id.starts_with('\0') || !frame_id.chars().all(|c| c.is_ascii_alphanumeric()) {
+    if frame_id.starts_with('\0') || !frame_id.chars().all(|c| c.is_ascii_alphanumeric())
+    {
         return None;
     }
 
     // Check if this is a valid ID3v2.4 frame ID
-    if !crate::id3v2_tools::is_valid_frame_for_version(&frame_id, 4) {
+    if !crate::id3v2_tools::is_valid_frame_for_version(&frame_id, 4)
+    {
         return None;
     }
 
@@ -31,7 +33,8 @@ pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame> {
     let frame_size = decode_synchsafe_int(&buffer[pos + 4..pos + 8]);
     let frame_flags = u16::from_be_bytes([buffer[pos + 8], buffer[pos + 9]]);
 
-    if frame_size == 0 || frame_size > (buffer.len() - pos - 10) as u32 {
+    if frame_size == 0 || frame_size > (buffer.len() - pos - 10) as u32
+    {
         return None;
     }
 
@@ -45,82 +48,110 @@ pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame> {
     Some(frame)
 }
 
-impl MediaDissector for Id3v24Dissector {
-    fn media_type(&self) -> &'static str {
+impl MediaDissector for Id3v24Dissector
+{
+    fn media_type(&self) -> &'static str
+    {
         "ID3v2.4"
     }
 
-    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>> {
+    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    {
         dissect_id3v2_4_file_with_options(file, options)
     }
 
-    fn can_handle(&self, header: &[u8]) -> bool {
+    fn can_handle(&self, header: &[u8]) -> bool
+    {
         // Check for ID3v2.4 specifically
-        if let Some((major, _minor)) = detect_id3v2_version(header) {
+        if let Some((major, _minor)) = detect_id3v2_version(header)
+        {
             return major == 4;
         }
 
         false // Don't fall back to MPEG sync for v2.4 since v2.3 should handle that
     }
 
-    fn name(&self) -> &'static str {
+    fn name(&self) -> &'static str
+    {
         "ID3v2.4 Dissector"
     }
 }
 
 /// Dissect an ID3v2.4 file from the beginning with specific options
-pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>> {
+pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+{
     // Read and parse ID3v2 header
-    if let Some((major, minor, flags, size)) = read_id3v2_header(file)? {
-        if major == 4 {
-            if options.show_header {
+    if let Some((major, minor, flags, size)) = read_id3v2_header(file)?
+    {
+        if major == 4
+        {
+            if options.show_header
+            {
                 println!("\nID3v2 Header Found:");
                 println!("  Version: 2.{}.{}", major, minor);
                 println!("  Flags: 0x{:02X}", flags);
 
                 // Interpret header flags
-                if flags != 0 {
+                if flags != 0
+                {
                     print!("    ");
                     let mut flag_parts = Vec::new();
-                    if flags & 0x80 != 0 {
+                    if flags & 0x80 != 0
+                    {
                         flag_parts.push("unsynchronisation");
                     }
-                    if flags & 0x40 != 0 {
+                    if flags & 0x40 != 0
+                    {
                         flag_parts.push("extended_header");
                     }
-                    if flags & 0x20 != 0 {
+                    if flags & 0x20 != 0
+                    {
                         flag_parts.push("experimental");
                     }
-                    if flags & 0x10 != 0 {
+                    if flags & 0x10 != 0
+                    {
                         flag_parts.push("footer_present");
                     }
-                    if !flag_parts.is_empty() {
+                    if !flag_parts.is_empty()
+                    {
                         println!("Active: {}", flag_parts.join(", "));
                     }
                 }
 
                 println!("  Tag Size: {} bytes", size);
 
-                if size > 100_000_000 {
+                if size > 100_000_000
+                {
                     println!("  WARNING: Extremely large tag size (> 100MB), verify file integrity");
-                } else if size > 50_000_000 {
+                }
+                else if size > 50_000_000
+                {
                     println!("  WARNING: Tag size is very large (> 50MB), likely rich podcast with chapter images");
-                } else if size > 10_000_000 {
+                }
+                else if size > 10_000_000
+                {
                     println!("  INFO: Large tag size (> 10MB), possibly podcast with embedded chapter content");
                 }
             }
 
-            if size > 0 {
+            if size > 0
+            {
                 // Allow very large tags for podcast content with chapter images
                 dissect_id3v2_4_with_options(file, size, flags, options)?;
             }
-        } else {
-            if options.show_header {
+        }
+        else
+        {
+            if options.show_header
+            {
                 println!("  Expected ID3v2.4, found version 2.{}", major);
             }
         }
-    } else {
-        if options.show_header {
+    }
+    else
+    {
+        if options.show_header
+        {
             println!("No ID3v2 header found");
         }
     }
@@ -128,15 +159,20 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
     Ok(())
 }
 
-pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>> {
-    if !options.show_frames {
+pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+{
+    if !options.show_frames
+    {
         // If not showing frames, skip the tag data entirely
         let mut buffer = vec![0u8; tag_size as usize];
-        match file.read_exact(&mut buffer) {
-            | Ok(_) => {
+        match file.read_exact(&mut buffer)
+        {
+            | Ok(_) =>
+            {
                 // Successfully skipped tag data
             }
-            | Err(e) => {
+            | Err(e) =>
+            {
                 println!("{}", format!("ERROR: Failed to skip tag data: {}", e).bright_red());
                 return Err(Box::new(e));
             }
@@ -148,11 +184,14 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
     println!("\nDissecting ID3v2.4 tag (size: {} bytes, flags: 0x{:02X})...", tag_size, flags);
 
     let mut buffer = vec![0u8; tag_size as usize];
-    match file.read_exact(&mut buffer) {
-        | Ok(_) => {
+    match file.read_exact(&mut buffer)
+    {
+        | Ok(_) =>
+        {
             println!("Successfully read {} bytes of tag data", tag_size);
         }
-        | Err(e) => {
+        | Err(e) =>
+        {
             println!("{}", format!("ERROR: Failed to read tag data: {}", e).bright_red());
             return Err(Box::new(e));
         }
@@ -160,7 +199,8 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
 
     // Handle unsynchronization if flag is set
     let unsync_flag = flags & 0x80 != 0; // Bit 7
-    if unsync_flag {
+    if unsync_flag
+    {
         println!("  Unsynchronization detected - removing sync bytes");
         buffer = remove_unsynchronization(&buffer);
         println!("  After unsynchronization removal: {} bytes", buffer.len());
@@ -170,11 +210,13 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
 
     // Check for extended header
     let mut frame_start = 0;
-    if flags & 0x40 != 0 {
+    if flags & 0x40 != 0
+    {
         // Extended header flag
         println!("Extended header flag set, parsing...");
 
-        if buffer.len() >= 4 {
+        if buffer.len() >= 4
+        {
             // ID3v2.4 uses synchsafe integers for extended header size
             let extended_size = decode_synchsafe_int(&buffer[0..4]);
             frame_start = 4 + extended_size as usize;
@@ -182,11 +224,14 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
             println!("  Extended header size: {} bytes", extended_size);
             println!("  Frame data starts at offset: {}", frame_start);
 
-            if frame_start > buffer.len() {
+            if frame_start > buffer.len()
+            {
                 println!("  {}", format!("ERROR: Extended header size exceeds buffer length").bright_red());
                 return Err("Invalid extended header size".into());
             }
-        } else {
+        }
+        else
+        {
             println!("  {}", format!("ERROR: Buffer too small to read extended header size").bright_red());
             return Err("Buffer too small for extended header".into());
         }
@@ -194,13 +239,15 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
 
     let mut pos = frame_start;
 
-    while pos + 10 <= buffer.len() {
+    while pos + 10 <= buffer.len()
+    {
         // ID3v2.4 frame header: 4 bytes ID + 4 bytes size + 2 bytes flags
         let frame_id_bytes = &buffer[pos..pos + 4];
         let frame_id = std::str::from_utf8(frame_id_bytes).unwrap_or("????");
 
         // Stop if we hit padding (null bytes)
-        if frame_id.starts_with('\0') || !frame_id.chars().all(|c| c.is_ascii_alphanumeric()) {
+        if frame_id.starts_with('\0') || !frame_id.chars().all(|c| c.is_ascii_alphanumeric())
+        {
             println!("  Reached padding or end of frames at position 0x{:08X}", pos);
             break;
         }
@@ -210,7 +257,8 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         let frame_flags = u16::from_be_bytes([buffer[pos + 8], buffer[pos + 9]]);
 
         // Check if this is a valid ID3v2.4 frame ID
-        if !is_valid_frame_for_version(frame_id, 4) {
+        if !is_valid_frame_for_version(frame_id, 4)
+        {
             // Create a temporary frame for header display even though it's invalid
             let temp_frame = crate::id3v2_frame::Id3v2Frame::new_with_offset(frame_id.to_string(), frame_size, frame_flags, pos, Vec::new());
 
@@ -221,9 +269,12 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
             println!();
 
             // Skip the entire frame (header + data) instead of just 1 byte
-            if frame_size > 0 && frame_size <= (buffer.len() - pos - 10) as u32 {
+            if frame_size > 0 && frame_size <= (buffer.len() - pos - 10) as u32
+            {
                 pos += 10 + frame_size as usize;
-            } else {
+            }
+            else
+            {
                 println!("    {}", format!("ERROR: Invalid frame size {}, falling back to 1-byte skip", frame_size).bright_red());
                 pos += 1;
             }
@@ -233,13 +284,15 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         // Sanity check frame size
 
         // Sanity check frame size
-        if frame_size == 0 {
+        if frame_size == 0
+        {
             println!("  Frame '{}' has zero size, skipping", frame_id);
             pos += 10;
             continue;
         }
 
-        if frame_size > (buffer.len() - pos - 10) as u32 {
+        if frame_size > (buffer.len() - pos - 10) as u32
+        {
             println!("  Frame '{}' size ({} bytes) exceeds remaining buffer, stopping", frame_id, frame_size);
             break;
         }
@@ -250,24 +303,28 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
             frame_size,
             frame_flags,
             pos,
-            Vec::new(), // Empty data for header display only
+            Vec::new() // Empty data for header display only
         );
 
         // Use the unified frame header display function
         crate::id3v2_tools::display_frame_header(&mut std::io::stdout(), &temp_frame, "    ")?;
 
         // Parse the frame using the new typed system
-        match parse_id3v2_4_frame(&buffer, pos) {
-            | Some(frame) => {
+        match parse_id3v2_4_frame(&buffer, pos)
+        {
+            | Some(frame) =>
+            {
                 print!("    {}", frame);
             }
-            | None => {
+            | None =>
+            {
                 println!("        WARNING: Failed to parse frame, showing raw info");
 
                 let preview_len = std::cmp::min(20, frame_size as usize);
                 let preview_data = &buffer[pos + 10..pos + 10 + preview_len];
                 print!("          Raw data preview: ");
-                for byte in preview_data {
+                for byte in preview_data
+                {
                     print!("{:02X} ", byte);
                 }
                 println!();

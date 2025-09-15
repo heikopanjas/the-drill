@@ -1,19 +1,24 @@
-use crate::media_dissector::MediaDissector;
-use crate::unknown_dissector::UnknownDissector;
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
+use std::{
+    fs::File,
+    io::{Read, Seek, SeekFrom}
+};
+
+use crate::{media_dissector::MediaDissector, unknown_dissector::UnknownDissector};
 
 /// Builder for creating the appropriate dissector based on file content
 pub struct DissectorBuilder;
 
-impl DissectorBuilder {
+impl DissectorBuilder
+{
     /// Create a new dissector builder
-    pub fn new() -> Self {
+    pub fn new() -> Self
+    {
         Self
     }
 
     /// Analyze file header and return the appropriate dissector
-    pub fn build_for_file(&self, file: &mut File) -> Result<Box<dyn MediaDissector>, Box<dyn std::error::Error>> {
+    pub fn build_for_file(&self, file: &mut File) -> Result<Box<dyn MediaDissector>, Box<dyn std::error::Error>>
+    {
         // Read file header for format detection
         let mut header = [0u8; 12];
         file.seek(SeekFrom::Start(0))?;
@@ -27,8 +32,10 @@ impl DissectorBuilder {
             Box::new(crate::isobmff_dissector::IsobmffDissector),
         ];
 
-        for dissector in dissectors {
-            if dissector.can_handle(&header) {
+        for dissector in dissectors
+        {
+            if dissector.can_handle(&header)
+            {
                 return Ok(dissector);
             }
         }
@@ -38,8 +45,10 @@ impl DissectorBuilder {
     }
 }
 
-impl Default for DissectorBuilder {
-    fn default() -> Self {
+impl Default for DissectorBuilder
+{
+    fn default() -> Self
+    {
         Self::new()
     }
 }
