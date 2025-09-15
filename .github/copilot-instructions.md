@@ -1,6 +1,6 @@
 # Copilot Instructions for Supertool
 
-**Last updated:** September 6, 2025
+**Last updated:** September 15, 2025
 
 ## Project Overview
 This is a Rust project called "supertool" - a versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and ISO Base Media File Format containers (MP4 files). The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
@@ -196,3 +196,7 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
 - **Reasoning**: Simplified `.github/workflows/release.yml` to use cross-compilation instead of matrix build strategy. The new approach builds all platform targets (Linux x86_64, macOS x86_64/aarch64, Windows x86_64/aarch64) from a single Ubuntu runner using Rust's excellent cross-compilation capabilities. This reduces build time, uses fewer GitHub Actions minutes, simplifies maintenance, and eliminates multiple VM overhead while producing identical binaries. Added Windows ARM64 support (`aarch64-pc-windows-gnullvm`) for comprehensive platform coverage. Removed test job to focus purely on building and releasing, assuming quality checks happen elsewhere in the development workflow.
 - **Version support implementation**: Added semantic versioning support with `--version` flag and updated project to version 1.0.0
 - **Reasoning**: Updated `Cargo.toml` version from 0.1.0 to 1.0.0 to reflect the mature state of the project with comprehensive ID3v2 and ISO BMFF support. Added `#[command(version)]` attribute to the CLI parser in `cli.rs` to enable `supertool --version` functionality using clap's built-in version handling. This provides standard CLI version reporting that displays "supertool 1.0.0" and integrates seamlessly with the help system. The version is automatically derived from Cargo.toml, ensuring consistency between package metadata and CLI output.
+
+### 2025-09-15
+- **Comprehensive code formatting standardization**: Applied consistent Rust code formatting standards across the entire codebase
+- **Reasoning**: Updated all 20 source files to use uniform Rust formatting conventions including consistent brace placement on new lines for structs, impl blocks, and functions, standardized spacing and alignment patterns, and improved field declaration and function parameter formatting. This comprehensive formatting update ensures code consistency and readability across the entire project while maintaining all existing functionality. The standardization follows Rust community best practices and makes the codebase easier to navigate, maintain, and contribute to for future development work.
