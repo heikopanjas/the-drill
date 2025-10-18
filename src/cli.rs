@@ -15,21 +15,21 @@ pub struct Cli
 #[derive(Subcommand)]
 pub enum Commands
 {
-    /// Debug and analyze media files (ID3v2/MP3, ISO BMFF/MP4)
+    /// Debug and analyze ID3v2 media files
     Debug
     {
         /// Path to the media file to analyze
         file: PathBuf,
 
-        /// Show only header information (ID3v2/ISO BMFF header)
+        /// Show only ID3v2 header information
         #[arg(long)]
         header: bool,
 
-        /// Show only frames/boxes information
+        /// Show only ID3v2 frame information
         #[arg(long)]
         frames: bool,
 
-        /// Show both header and frames/boxes (default if no options specified)
+        /// Show both header and frames (default if no options specified)
         #[arg(long)]
         all: bool
     }

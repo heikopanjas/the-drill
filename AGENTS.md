@@ -1,9 +1,9 @@
 # Agent Instructions for Supertool
 
-**Last updated:** September 15, 2025
+**Last updated:** October 18, 2025
 
 ## Project Overview
-This is a Rust project called "supertool" - a versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and ISO Base Media File Format containers (MP4 files). The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
+This is a Rust project called "supertool" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files). The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
 
 ## Development Guidelines
 
@@ -15,6 +15,7 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
 - Write clear, descriptive commit messages using conventional commits format
 
 ### Project Structure
+
 - Source code in `src/`
 - Main entry point: `src/main.rs` (CLI interface and dissector coordination)
 - Core modules:
@@ -36,29 +37,32 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
   - `src/id3v2_chapter_frame.rs` - Chapter Frame (CHAP) from ID3v2 Chapter Frame Addendum
   - `src/id3v2_table_of_contents_frame.rs` - Table of Contents Frame (CTOC) from ID3v2 Chapter Frame Addendum
   - `src/id3v2_tools.rs` - Utility functions for ID3v2 processing (synchsafe integers, unsynchronization, frame flags)
-  - `src/isobmff_dissector.rs` - ISO Base Media File Format box parsing for MP4 files
+
 - Use Cargo for dependency management and builds
 - Follow "one struct/trait per file" organization principle
 
 ### Dependencies
+
 - `clap 4.5` with derive features for CLI argument parsing
 - `owo-colors 4.1` for enhanced colored output formatting
 
 ### Technical Implementation
+
 - **Common Dissector Trait**: All dissectors implement the `MediaDissector` trait providing unified interface with `dissect()`, `can_handle()`, and metadata methods
 - **Dissector Builder Pattern**: `DissectorBuilder` analyzes file headers and returns the appropriate dissector automatically
 - **ID3v2 Support**: Specification-compliant parsing for ID3v2.3 and ID3v2.4 with proper unsynchronization handling, frame flag interpretation, and UTF-16 text support
-- **ISO BMFF Support**: Box header parsing with size and type detection for MP4 containers
-- **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns, ftyp boxes)
+- **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns)
 - **CLI Interface**: Subcommand-based interface with `debug` command for file analysis
 - **Cross-Platform**: Windows, macOS, and Linux compatibility with proper terminal color support
 
 ### Documentation
+
 - Document public APIs with rustdoc comments
 - Keep README updated with project status and usage
 - Maintain this agent instructions file as the project evolves
 
 ## Development Workflow
+
 1. Make changes following the guidelines above
 2. Test changes with `cargo run -- debug <file>` to test file dissection (use `--header`, `--frames`, or `--all` options as needed)
 3. Run `cargo build` to ensure compilation
@@ -68,15 +72,17 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
 7. Update this file when significant architectural decisions are made
 
 ### Important Notes
+
 - Use terminology "dissect" rather than "parse" for media analysis operations
-- Prefer "ID3v2" over "MP3" and "ISO BMFF" over "MP4" for technical accuracy
-- Maintain specification compliance for ID3v2.3/2.4 and ISO Base Media File Format standards
+- Prefer "ID3v2" terminology over "MP3" when discussing metadata structures
+- Maintain specification compliance for ID3v2.3/2.4 standards
 
 ---
 
 ## Recent Updates & Decisions
 
 ### 2025-09-03
+
 - **Initial setup**: Created initial agent instructions file for new Rust project
 - **Reasoning**: Establishing development standards and workflow from the beginning of the project
 - **Cross-platform requirement**: Added multi-platform compatibility requirement (macOS, Windows, Linux)
@@ -146,6 +152,7 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
 - **Reasoning**: Cleaned up dead code warnings by removing unused constructor methods (`new_with_content`, `new_with_embedded`, `new_complete`) and accessor methods (`id()`, `size()`, `flags()`, `data()`, `is_valid_id()`, `total_size()`, `supports_embedded_frames()`, `embedded_frames()`, `has_embedded_frames()`, `is_parsed()`) from `Id3v2Frame` struct since the fields are public and directly accessible. Also removed unused `all_strings()` method from `TextFrame` and converted `Binary(Vec<u8>)` variant to `Binary` unit variant since the inner data was never accessed (raw data remains available in `Id3v2Frame.data` field). This eliminates compiler warnings while maintaining full functionality and improving code clarity by removing redundant interfaces.
 
 ### 2025-09-06
+
 - **Frame display refactoring**: Moved frame-specific display logic from central nested loops to individual frame type implementations
 - **Reasoning**: Refactored the large, duplicated display logic in `Id3v2Frame::fmt()` method by implementing `Display` trait for each frame content type (`TextFrame`, `UrlFrame`, `UserTextFrame`, `UserUrlFrame`, `CommentFrame`, `AttachedPictureFrame`, `UniqueFileIdFrame`, `ChapterFrame`, `TableOfContentsFrame`) and `Id3v2FrameContent` enum. Created helper functions `display_embedded_frame_content()` and `format_embedded_display()` in `id3v2_chapter_frame.rs` to handle embedded frame formatting with proper indentation and text truncation. This eliminates the nested loops with nearly identical logic for embedded frames in CHAP and CTOC display, improves code maintainability by putting frame-specific formatting in the appropriate modules, reduces code duplication, and follows the single responsibility principle. The main `Id3v2Frame::fmt()` implementation is now much cleaner and simply delegates to the frame content's own display implementation.
 - **Enhanced diagnostic output formatting**: Reformatted frame parsing diagnostic output for improved readability and consistency
@@ -198,5 +205,11 @@ This is a Rust project called "supertool" - a versatile media file analysis tool
 - **Reasoning**: Updated `Cargo.toml` version from 0.1.0 to 1.0.0 to reflect the mature state of the project with comprehensive ID3v2 and ISO BMFF support. Added `#[command(version)]` attribute to the CLI parser in `cli.rs` to enable `supertool --version` functionality using clap's built-in version handling. This provides standard CLI version reporting that displays "supertool 1.0.0" and integrates seamlessly with the help system. The version is automatically derived from Cargo.toml, ensuring consistency between package metadata and CLI output.
 
 ### 2025-09-15
+
 - **Comprehensive code formatting standardization**: Applied consistent Rust code formatting standards across the entire codebase
 - **Reasoning**: Updated all 20 source files to use uniform Rust formatting conventions including consistent brace placement on new lines for structs, impl blocks, and functions, standardized spacing and alignment patterns, and improved field declaration and function parameter formatting. This comprehensive formatting update ensures code consistency and readability across the entire project while maintaining all existing functionality. The standardization follows Rust community best practices and makes the codebase easier to navigate, maintain, and contribute to for future development work.
+
+### 2025-10-18
+
+- **Removed ISO BMFF support**: Deleted the ISO BMFF dissector module, pruned builder wiring, and updated CLI messaging to focus solely on ID3v2 analysis.
+- **Reasoning**: Narrowing scope to ID3v2 keeps the codebase lean, reduces maintenance of partially implemented MP4 features, and aligns the tool with its primary diagnostic use cases.

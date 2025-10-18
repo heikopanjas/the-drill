@@ -1,6 +1,6 @@
 # Supertool
 
-A versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and ISO Base Media File Format containers (MP4 files). Built in Rust for cross-platform compatibility with a focus on detailed diagnostic output and specification compliance.
+A versatile media file analysis tool that dissects ID3v2 tags (MP3 files). Built in Rust for cross-platform compatibility with a focus on detailed diagnostic output and specification compliance.
 
 ## Features
 
@@ -12,12 +12,6 @@ A versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and IS
 - **Embedded frame analysis** within chapter structures
 - **Diagnostic output** with hex byte inspection and frame validation
 - **Large tag handling** optimized for podcast files with chapter images (up to 100MB)
-
-### ISO Base Media File Format Support
-
-- **MP4 container analysis** with box header parsing
-- **Size and type detection** for ISO BMFF boxes
-- **Cross-platform compatibility** for various MP4 variants
 
 ### Advanced Features
 
@@ -57,9 +51,6 @@ cargo build
 ```bash
 # Analyze an MP3 file with full output
 supertool debug song.mp3
-
-# Analyze an MP4 file
-supertool debug video.mp4
 ```
 
 ### Granular Output Control
@@ -84,9 +75,9 @@ Arguments:
   <FILE>  Path to the media file to analyze
 
 Options:
-      --header  Show only header information (ID3v2/ISO BMFF header)
-      --frames  Show only frames/boxes information
-      --all     Show both header and frames/boxes (default if no options specified)
+  --header  Show only ID3v2 header information
+  --frames  Show only ID3v2 frame information
+  --all     Show both header and frames (default if no options specified)
   -h, --help    Print help
 ```
 
@@ -154,12 +145,6 @@ ID3v2 Header Found:
 - **Chapter Frames** - CHAP and CTOC from ID3v2 Chapter Frame Addendum
 - **All standard frames** - TEXT, URL, COMM, APIC, UFID, TXXX, WXXX, etc.
 
-### Media Containers
-
-- **MP3** - MPEG audio files with ID3v2 tags
-- **MP4** - ISO Base Media File Format containers
-- **M4A** - Audio-only MP4 containers
-
 ## Technical Details
 
 ### Architecture
@@ -184,7 +169,6 @@ ID3v2 Header Found:
 - **ID3v2.3** - Full compliance with original specification
 - **ID3v2.4** - Complete implementation including synchsafe integers
 - **ID3v2 Chapter Addendum** - CHAP and CTOC frame support
-- **ISO BMFF** - Basic box parsing for MP4 containers
 
 ## Development
 
@@ -227,7 +211,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - ID3v2 specification maintainers for comprehensive documentation
-- ISO for the Base Media File Format specification
 - Rust community for excellent tooling and libraries
 - Podcast creators whose files helped test large tag handling
 
