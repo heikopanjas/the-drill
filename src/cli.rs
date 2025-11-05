@@ -15,21 +15,21 @@ pub struct Cli
 #[derive(Subcommand)]
 pub enum Commands
 {
-    /// Debug and analyze ID3v2 media files
+    /// Debug and analyze media files
     Debug
     {
         /// Path to the media file to analyze
         file: PathBuf,
 
-        /// Show only ID3v2 header information
+        /// Show only file header information
         #[arg(long)]
         header: bool,
 
-        /// Show only ID3v2 frame information
+        /// Show only data structures (ID3v2 frames, ISOBMFF boxes)
         #[arg(long)]
-        frames: bool,
+        data: bool,
 
-        /// Show both header and frames (default if no options specified)
+        /// Show both header and data (default if no options specified)
         #[arg(long)]
         all: bool
     }
@@ -40,26 +40,26 @@ pub enum Commands
 pub struct DebugOptions
 {
     pub show_header: bool,
-    pub show_frames: bool
+    pub show_data:   bool
 }
 
 impl DebugOptions
 {
-    pub fn from_flags(header: bool, frames: bool, all: bool) -> Self
+    pub fn from_flags(header: bool, data: bool, all: bool) -> Self
     {
         // If no flags specified, default to showing everything
-        if !header && !frames && !all
+        if !header && !data && !all
         {
-            return DebugOptions { show_header: true, show_frames: true };
+            return DebugOptions { show_header: true, show_data: true };
         }
 
         // If --all is specified, show everything regardless of other flags
         if all
         {
-            return DebugOptions { show_header: true, show_frames: true };
+            return DebugOptions { show_header: true, show_data: true };
         }
 
         // Otherwise, use the specific flags
-        DebugOptions { show_header: header, show_frames: frames }
+        DebugOptions { show_header: header, show_data: data }
     }
 }

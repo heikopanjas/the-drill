@@ -32,9 +32,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
 
     match cli.command
     {
-        | Commands::Debug { file, header, frames, all } =>
+        | Commands::Debug { file, header, data, all } =>
         {
-            let options = DebugOptions::from_flags(header, frames, all);
+            let options = DebugOptions::from_flags(header, data, all);
             dissect_file(&file, &options)?;
         }
     }

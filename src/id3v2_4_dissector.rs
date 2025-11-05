@@ -161,9 +161,9 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
 
 pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
 {
-    if !options.show_frames
+    if !options.show_data
     {
-        // If not showing frames, skip the tag data entirely
+        // If not showing data, skip the tag data entirely
         let mut buffer = vec![0u8; tag_size as usize];
         match file.read_exact(&mut buffer)
         {

@@ -287,7 +287,7 @@ impl MediaDissector for IsobmffDissector
         }
 
         // Boxes/structure information
-        if options.show_frames
+        if options.show_data
         {
             println!("{}\n", "Box Structure:".bright_cyan().bold());
 
