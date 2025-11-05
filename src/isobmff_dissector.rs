@@ -6,7 +6,7 @@ use std::{
 
 use owo_colors::OwoColorize;
 
-use crate::{cli::DebugOptions, isobmff_box::IsobmffBox, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
+use crate::{cli::DebugOptions, isobmff_box::IsobmffBox, isobmff_content::IsobmffContent, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
 
 /// Wrapper for displaying box with verbose option
 pub struct VerboseBoxDisplay<'a>
@@ -67,6 +67,16 @@ impl IsobmffBox
         }
 
         // Display parsed content for iTunes metadata boxes
+        if let Some(ref itunes_content) = self.itunes_content
+        {
+            let content_str = format!("{}", itunes_content);
+            for line in content_str.lines()
+            {
+                writeln!(f, "{}    {}", indent_str, line)?;
+            }
+        }
+
+        // Display parsed content for standard ISOBMFF boxes
         if let Some(ref content) = self.content
         {
             let content_str = format!("{}", content);
@@ -248,10 +258,16 @@ impl IsobmffDissector
                 let mut content_start = current_offset + header_size;
                 let content_end = current_offset + box_size;
 
-                // Special handling for 'meta' box - it has version/flags (4 bytes) before children
+                // Special handling for FullBox containers - they have version/flags (4 bytes) before children
+                // meta: just version/flags
+                // dref: version/flags + entry_count (8 bytes total)
                 if isobmff_box.box_type == "meta" && content_end - content_start >= 4
                 {
                     content_start += 4; // Skip version (1 byte) + flags (3 bytes)
+                }
+                else if isobmff_box.box_type == "dref" && content_end - content_start >= 8
+                {
+                    content_start += 8; // Skip version/flags (4 bytes) + entry_count (4 bytes)
                 }
 
                 isobmff_box.children = Self::parse_boxes(file, content_start, content_end, depth + 1)?;
@@ -266,7 +282,7 @@ impl IsobmffDissector
                         {
                             match ItunesMetadata::parse(&box_type, &data_box.data)
                             {
-                                | Ok(metadata) => isobmff_box.content = Some(metadata),
+                                | Ok(metadata) => isobmff_box.itunes_content = Some(metadata),
                                 | Err(_) =>
                                 {} // Ignore parsing errors for now
                             }
@@ -288,6 +304,33 @@ impl IsobmffDissector
                     file.read_exact(&mut data).map_err(|e| format!("Failed to read box data: {}", e))?;
 
                     isobmff_box.data = data;
+
+                    // Parse content for standard ISOBMFF boxes
+                    isobmff_box.content = match box_type.as_str()
+                    {
+                        | "ftyp" => IsobmffContent::parse_ftyp(&isobmff_box.data).ok(),
+                        | "mvhd" => IsobmffContent::parse_mvhd(&isobmff_box.data).ok(),
+                        | "tkhd" => IsobmffContent::parse_tkhd(&isobmff_box.data).ok(),
+                        | "mdhd" => IsobmffContent::parse_mdhd(&isobmff_box.data).ok(),
+                        | "hdlr" => IsobmffContent::parse_hdlr(&isobmff_box.data).ok(),
+                        | "vmhd" => IsobmffContent::parse_vmhd(&isobmff_box.data).ok(),
+                        | "smhd" => IsobmffContent::parse_smhd(&isobmff_box.data).ok(),
+                        | "nmhd" => IsobmffContent::parse_nmhd(&isobmff_box.data).ok(),
+                        | "dref" => IsobmffContent::parse_dref(&isobmff_box.data).ok(),
+                        | "stsd" => IsobmffContent::parse_stsd(&isobmff_box.data).ok(),
+                        | "stts" => IsobmffContent::parse_stts(&isobmff_box.data).ok(),
+                        | "stsc" => IsobmffContent::parse_stsc(&isobmff_box.data).ok(),
+                        | "stsz" => IsobmffContent::parse_stsz(&isobmff_box.data).ok(),
+                        | "stco" => IsobmffContent::parse_stco(&isobmff_box.data).ok(),
+                        | "co64" => IsobmffContent::parse_co64(&isobmff_box.data).ok(),
+                        | "elst" => IsobmffContent::parse_elst(&isobmff_box.data).ok(),
+                        | "url " => IsobmffContent::parse_url(&isobmff_box.data).ok(),
+                        | "urn " => IsobmffContent::parse_urn(&isobmff_box.data).ok(),
+                        | "chap" => IsobmffContent::parse_chap(&isobmff_box.data).ok(),
+                        | "mean" => IsobmffContent::parse_mean(&isobmff_box.data).ok(),
+                        | "name" => IsobmffContent::parse_name(&isobmff_box.data).ok(),
+                        | _ => None
+                    };
                 }
             }
 
@@ -296,38 +339,6 @@ impl IsobmffDissector
         }
 
         Ok(boxes)
-    }
-
-    /// Parse ftyp box details
-    fn format_ftyp_details(ftyp: &IsobmffBox) -> String
-    {
-        let mut output = String::new();
-
-        if ftyp.data.len() >= 8
-        {
-            let major_brand = String::from_utf8_lossy(&ftyp.data[0..4]);
-            let minor_version = u32::from_be_bytes([ftyp.data[4], ftyp.data[5], ftyp.data[6], ftyp.data[7]]);
-
-            output.push_str(&format!("    Major Brand: '{}'\n", major_brand));
-            output.push_str(&format!("    Minor Version: {}\n", minor_version));
-
-            if ftyp.data.len() > 8
-            {
-                output.push_str("    Compatible Brands: ");
-                let mut brands = Vec::new();
-                for chunk in ftyp.data[8..].chunks(4)
-                {
-                    if chunk.len() == 4
-                    {
-                        brands.push(format!("'{}'", String::from_utf8_lossy(chunk)));
-                    }
-                }
-                output.push_str(&brands.join(", "));
-                output.push('\n');
-            }
-        }
-
-        output
     }
 }
 
@@ -360,7 +371,6 @@ impl MediaDissector for IsobmffDissector
                 ftyp.box_type == "ftyp"
             {
                 println!("{}", ftyp);
-                print!("{}", Self::format_ftyp_details(ftyp));
             }
 
             println!();

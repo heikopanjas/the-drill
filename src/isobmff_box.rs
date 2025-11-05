@@ -1,17 +1,18 @@
-use crate::itunes_metadata::ItunesMetadata;
+use crate::{isobmff_content::IsobmffContent, itunes_metadata::ItunesMetadata};
 
 /// Represents an ISOBMFF box (also called "atom")
 #[derive(Debug, Clone)]
 pub struct IsobmffBox
 {
-    pub offset:       u64,
-    pub box_type:     String,
-    pub size:         u64,
-    pub header_size:  u64,
-    pub is_container: bool,
-    pub children:     Vec<IsobmffBox>,
-    pub data:         Vec<u8>,
-    pub content:      Option<ItunesMetadata>
+    pub offset:         u64,
+    pub box_type:       String,
+    pub size:           u64,
+    pub header_size:    u64,
+    pub is_container:   bool,
+    pub children:       Vec<IsobmffBox>,
+    pub data:           Vec<u8>,
+    pub itunes_content: Option<ItunesMetadata>,
+    pub content:        Option<IsobmffContent>
 }
 
 impl IsobmffBox
@@ -21,7 +22,7 @@ impl IsobmffBox
     {
         let is_container = is_container_type(&box_type);
 
-        Self { offset, box_type, size, header_size, is_container, children: Vec::new(), data: Vec::new(), content: None }
+        Self { offset, box_type, size, header_size, is_container, children: Vec::new(), data: Vec::new(), itunes_content: None, content: None }
     }
 
     /// Get human-readable description of box type
@@ -43,7 +44,28 @@ pub fn is_container_type(box_type: &str) -> bool
     // Standard containers
     if matches!(
         box_type,
-        "moov" | "trak" | "edts" | "mdia" | "minf" | "dinf" | "stbl" | "mvex" | "moof" | "traf" | "mfra" | "meta" | "ipro" | "udta" | "tref" | "ilst"
+        "moov" |
+            "trak" |
+            "edts" |
+            "mdia" |
+            "minf" |
+            "dinf" |
+            "dref" |
+            "stbl" |
+            "mvex" |
+            "moof" |
+            "traf" |
+            "mfra" |
+            "meta" |
+            "ipro" |
+            "sinf" |
+            "rinf" |
+            "udta" |
+            "tref" |
+            "ilst" |
+            "trgr" |
+            "grpl" |
+            "schi"
     )
     {
         return true;
