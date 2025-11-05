@@ -60,6 +60,11 @@ pub fn format_hexdump_limited(data: &[u8], base_offset: usize, max_bytes: Option
                 output.push('.');
             }
         }
+        // Pad ASCII section to 16 characters if less than 16 bytes
+        for _ in chunk.len()..16
+        {
+            output.push(' ');
+        }
         output.push('|');
         output.push('\n');
     }
