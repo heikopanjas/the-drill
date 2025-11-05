@@ -7,6 +7,23 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
 
 ## Development Guidelines
 
+### CRITICAL: VSCode Terminal Limitations
+
+**⚠️ NEVER use terminal commands to write large amounts of text to files!**
+
+The VSCode terminal CRASHES when attempting to insert large text blocks (>50 lines) using:
+- `cat` with heredoc (`cat > file << EOF`)
+- `echo` with multi-line strings
+- Python scripts with large string literals
+- Any command that streams large text output
+
+**ALWAYS use these tools instead:**
+- ✅ `create_file` tool - for creating new files with any amount of content
+- ✅ `replace_string_in_file` tool - for editing existing files
+- ✅ Terminal commands - ONLY for small operations (rm, mv, ls, grep, etc.)
+
+**This is CRITICAL and must be followed to prevent terminal crashes!**
+
 ### Code Style & Standards
 - Follow Rust best practices and idioms
 - Ensure cross-platform compatibility (macOS, Windows, Linux)
@@ -320,3 +337,5 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **Reasoning**: Updated `HandlerReference` content type to include manufacturer field extracted from the first 4 bytes of the reserved field (bytes 12-15 of hdlr box). The ISOBMFF specification defines 12 bytes of reserved space after the handler_type field, and implementers often use the first 4 bytes for a manufacturer code. Added parsing to extract this field and display it when it contains alphanumeric characters. Added 'mdir' (Metadata Directory) to handler type descriptions. This resolves the apparent 'mdirappl' string seen in hexdumps - it's actually 'mdir' (handler type) + 'appl' (manufacturer code), commonly used for Apple-specific metadata directories containing iTunes metadata (ilst boxes). Tested with M4A file showing correct parsing of 'mdir'/'appl' combination in metadata track handlers.
 - **Additional ISOBMFF box content parsing**: Added parsing for chap, nmhd, mean, and name boxes to complete container analysis
 - **Reasoning**: Extended `IsobmffContent` enum with four new variants: `ChapterReference` (chap box containing track ID list), `NullMediaHeader` (nmhd box with version field), `MetadataMean` (mean box containing namespace like "com.apple.iTunes"), and `MetadataName` (name box containing key name like "iTunSMPB"). Implemented parsing functions `parse_chap()`, `parse_nmhd()`, `parse_mean()`, and `parse_name()` in `src/isobmff_content.rs`. Added Display trait implementations showing track IDs as array for chap, version for nmhd, and namespace/name strings for mean/name boxes. Wired up parsers in `src/isobmff_dissector.rs` content matching. The chap box parsing reveals chapter track references (e.g., [2, 3] indicating tracks 2 and 3 contain chapter metadata). The mean/name boxes are crucial for understanding custom iTunes metadata in '----' boxes, showing the namespace and key that identify the metadata type. Tested with M4A podcast file showing "Chapter Track IDs: [2, 3]", "Namespace: com.apple.iTunes", and "Name: iTunSMPB" correctly parsed and displayed. This completes the container analysis by parsing all structural metadata boxes that were previously showing only raw data.
+- **ISOBMFF box type modularization**: Split `isobmff_content.rs` into individual files following "one struct/trait per file" principle, matching ID3v2 frame architecture
+- **Reasoning**: Refactored monolithic 869-line `isobmff_content.rs` into 11 focused modules: `isobmff_file_type.rs` (FileTypeBox for ftyp), `isobmff_movie_header.rs` (MovieHeaderBox for mvhd), `isobmff_track_header.rs` (TrackHeaderBox for tkhd), `isobmff_media_header.rs` (MediaHeaderBox for mdhd), `isobmff_handler.rs` (HandlerBox for hdlr), `isobmff_media_info_header.rs` (VideoMediaHeaderBox/SoundMediaHeaderBox/NullMediaHeaderBox for vmhd/smhd/nmhd), `isobmff_data_reference.rs` (DataReferenceBox/UrlEntryBox/UrnEntryBox for dref/url /urn ), `isobmff_sample_table.rs` (SampleDescriptionBox/TimeToSampleBox/SampleToChunkBox/SampleSizeBox/ChunkOffsetBox/ChunkOffset64Box for stsd/stts/stsc/stsz/stco/co64), `isobmff_edit_list.rs` (EditListBox for elst), `isobmff_chapter.rs` (ChapterBox for chap), and `isobmff_metadata_keys.rs` (MetadataMeanBox/MetadataNameBox for mean/name). Each module contains its own struct definition, parse() method, and Display trait implementation. Updated `isobmff_content.rs` to a lean 72-line file containing only the `IsobmffContent` enum with variants wrapping the individual box types, Display trait delegation, and re-exports. Modified `isobmff_dissector.rs` to call individual box parsing methods (e.g., `FileTypeBox::parse()`) and wrap results in enum variants. Registered all 11 new modules in `main.rs`. This architectural change mirrors the successful ID3v2 frame modularization, improving code maintainability, reducing file size, following Rust best practices for module organization, enabling easier testing of individual box types, and making the codebase more navigable. Each box type now has clear single responsibility with parsing and display logic colocated.

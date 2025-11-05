@@ -6,7 +6,7 @@ use std::{
 
 use owo_colors::OwoColorize;
 
-use crate::{cli::DebugOptions, isobmff_box::IsobmffBox, isobmff_content::IsobmffContent, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
+use crate::{cli::DebugOptions, isobmff_box::IsobmffBox, isobmff_content::*, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
 
 /// Wrapper for displaying box with verbose option
 pub struct VerboseBoxDisplay<'a>
@@ -308,27 +308,27 @@ impl IsobmffDissector
                     // Parse content for standard ISOBMFF boxes
                     isobmff_box.content = match box_type.as_str()
                     {
-                        | "ftyp" => IsobmffContent::parse_ftyp(&isobmff_box.data).ok(),
-                        | "mvhd" => IsobmffContent::parse_mvhd(&isobmff_box.data).ok(),
-                        | "tkhd" => IsobmffContent::parse_tkhd(&isobmff_box.data).ok(),
-                        | "mdhd" => IsobmffContent::parse_mdhd(&isobmff_box.data).ok(),
-                        | "hdlr" => IsobmffContent::parse_hdlr(&isobmff_box.data).ok(),
-                        | "vmhd" => IsobmffContent::parse_vmhd(&isobmff_box.data).ok(),
-                        | "smhd" => IsobmffContent::parse_smhd(&isobmff_box.data).ok(),
-                        | "nmhd" => IsobmffContent::parse_nmhd(&isobmff_box.data).ok(),
-                        | "dref" => IsobmffContent::parse_dref(&isobmff_box.data).ok(),
-                        | "stsd" => IsobmffContent::parse_stsd(&isobmff_box.data).ok(),
-                        | "stts" => IsobmffContent::parse_stts(&isobmff_box.data).ok(),
-                        | "stsc" => IsobmffContent::parse_stsc(&isobmff_box.data).ok(),
-                        | "stsz" => IsobmffContent::parse_stsz(&isobmff_box.data).ok(),
-                        | "stco" => IsobmffContent::parse_stco(&isobmff_box.data).ok(),
-                        | "co64" => IsobmffContent::parse_co64(&isobmff_box.data).ok(),
-                        | "elst" => IsobmffContent::parse_elst(&isobmff_box.data).ok(),
-                        | "url " => IsobmffContent::parse_url(&isobmff_box.data).ok(),
-                        | "urn " => IsobmffContent::parse_urn(&isobmff_box.data).ok(),
-                        | "chap" => IsobmffContent::parse_chap(&isobmff_box.data).ok(),
-                        | "mean" => IsobmffContent::parse_mean(&isobmff_box.data).ok(),
-                        | "name" => IsobmffContent::parse_name(&isobmff_box.data).ok(),
+                        | "ftyp" => FileTypeBox::parse(&isobmff_box.data).ok().map(IsobmffContent::FileType),
+                        | "mvhd" => MovieHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::MovieHeader),
+                        | "tkhd" => TrackHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::TrackHeader),
+                        | "mdhd" => MediaHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::MediaHeader),
+                        | "hdlr" => HandlerBox::parse(&isobmff_box.data).ok().map(IsobmffContent::Handler),
+                        | "vmhd" => VideoMediaHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::VideoMediaHeader),
+                        | "smhd" => SoundMediaHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::SoundMediaHeader),
+                        | "nmhd" => NullMediaHeaderBox::parse(&isobmff_box.data).ok().map(IsobmffContent::NullMediaHeader),
+                        | "dref" => DataReferenceBox::parse(&isobmff_box.data).ok().map(IsobmffContent::DataReference),
+                        | "stsd" => SampleDescriptionBox::parse(&isobmff_box.data).ok().map(IsobmffContent::SampleDescription),
+                        | "stts" => TimeToSampleBox::parse(&isobmff_box.data).ok().map(IsobmffContent::TimeToSample),
+                        | "stsc" => SampleToChunkBox::parse(&isobmff_box.data).ok().map(IsobmffContent::SampleToChunk),
+                        | "stsz" => SampleSizeBox::parse(&isobmff_box.data).ok().map(IsobmffContent::SampleSize),
+                        | "stco" => ChunkOffsetBox::parse(&isobmff_box.data).ok().map(IsobmffContent::ChunkOffset),
+                        | "co64" => ChunkOffset64Box::parse(&isobmff_box.data).ok().map(IsobmffContent::ChunkOffset64),
+                        | "elst" => EditListBox::parse(&isobmff_box.data).ok().map(IsobmffContent::EditList),
+                        | "url " => UrlEntryBox::parse(&isobmff_box.data).ok().map(IsobmffContent::UrlEntry),
+                        | "urn " => UrnEntryBox::parse(&isobmff_box.data).ok().map(IsobmffContent::UrnEntry),
+                        | "chap" => ChapterBox::parse(&isobmff_box.data).ok().map(IsobmffContent::Chapter),
+                        | "mean" => MetadataMeanBox::parse(&isobmff_box.data).ok().map(IsobmffContent::MetadataMean),
+                        | "name" => MetadataNameBox::parse(&isobmff_box.data).ok().map(IsobmffContent::MetadataName),
                         | _ => None
                     };
                 }
