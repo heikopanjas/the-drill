@@ -6,7 +6,7 @@ use std::{
 
 use owo_colors::OwoColorize;
 
-use crate::{cli::DebugOptions, media_dissector::MediaDissector};
+use crate::{cli::DebugOptions, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
 
 /// Represents an ISOBMFF box (also called "atom")
 #[derive(Debug, Clone)]
@@ -18,7 +18,8 @@ pub struct IsobmffBox
     pub header_size:  u64,
     pub is_container: bool,
     pub children:     Vec<IsobmffBox>,
-    pub data:         Vec<u8>
+    pub data:         Vec<u8>,
+    pub content:      Option<ItunesMetadata>
 }
 
 impl IsobmffBox
@@ -28,16 +29,65 @@ impl IsobmffBox
     {
         let is_container = Self::is_container_type(&box_type);
 
-        Self { offset, box_type, size, header_size, is_container, children: Vec::new(), data: Vec::new() }
+        Self { offset, box_type, size, header_size, is_container, children: Vec::new(), data: Vec::new(), content: None }
     }
 
     /// Check if a box type is a container
     fn is_container_type(box_type: &str) -> bool
     {
-        matches!(
+        // Standard containers
+        if matches!(
             box_type,
             "moov" | "trak" | "edts" | "mdia" | "minf" | "dinf" | "stbl" | "mvex" | "moof" | "traf" | "mfra" | "meta" | "ipro" | "udta" | "tref" | "ilst"
         )
+        {
+            return true;
+        }
+
+        // iTunes metadata boxes are also containers (contain 'data' child)
+        box_type.starts_with('©') ||
+            matches!(
+                box_type,
+                "trkn" |
+                    "disk" |
+                    "tmpo" |
+                    "covr" |
+                    "aART" |
+                    "----" |
+                    "gnre" |
+                    "hdvd" |
+                    "pgap" |
+                    "pcst" |
+                    "cpil" |
+                    "rtng" |
+                    "stik" |
+                    "tven" |
+                    "tves" |
+                    "tvnn" |
+                    "tvsh" |
+                    "tvsn" |
+                    "apID" |
+                    "akID" |
+                    "atID" |
+                    "cnID" |
+                    "geID" |
+                    "plID" |
+                    "sfID" |
+                    "soaa" |
+                    "soal" |
+                    "soar" |
+                    "soco" |
+                    "sonm" |
+                    "sosn" |
+                    "xid " |
+                    "keyw" |
+                    "catg" |
+                    "purl" |
+                    "egid" |
+                    "desc" |
+                    "ldes" |
+                    "sdes"
+            )
     }
 
     /// Get human-readable description of box type
@@ -53,6 +103,21 @@ impl IsobmffBox
     }
 }
 
+/// Wrapper for displaying box with verbose option
+pub struct VerboseBoxDisplay<'a>
+{
+    pub box_ref: &'a IsobmffBox,
+    pub verbose: bool
+}
+
+impl<'a> fmt::Display for VerboseBoxDisplay<'a>
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
+        self.box_ref.fmt_with_indent_and_options(f, 0, self.verbose)
+    }
+}
+
 impl fmt::Display for IsobmffBox
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
@@ -65,6 +130,17 @@ impl IsobmffBox
 {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter<'_>, indent: usize) -> fmt::Result
     {
+        self.fmt_with_indent_and_options(f, indent, false)
+    }
+
+    fn fmt_with_indent_and_options(&self, f: &mut fmt::Formatter<'_>, indent: usize, verbose: bool) -> fmt::Result
+    {
+        // Skip certain technical boxes unless verbose mode is enabled
+        if !verbose && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64")
+        {
+            return Ok(());
+        }
+
         let indent_str = "    ".repeat(indent);
 
         // Format box display string
@@ -84,12 +160,22 @@ impl IsobmffBox
             writeln!(f, "{}Box at offset 0x{:08X}: {} - Size: {} bytes", indent_str, self.offset, box_info, self.size)?;
         }
 
+        // Display parsed content for iTunes metadata boxes
+        if let Some(ref content) = self.content
+        {
+            let content_str = format!("{}", content);
+            for line in content_str.lines()
+            {
+                writeln!(f, "{}    {}", indent_str, line)?;
+            }
+        }
+
         // Display children for container boxes
         if self.is_container && !self.children.is_empty()
         {
             for child in &self.children
             {
-                child.fmt_with_indent(f, indent + 1)?;
+                child.fmt_with_indent_and_options(f, indent + 1, verbose)?;
             }
         }
 
@@ -123,6 +209,55 @@ impl IsobmffDissector
                 }
             })
             .collect()
+    }
+
+    /// Check if a box is an iTunes metadata box (should have 'data' child)
+    fn is_itunes_metadata_box(box_type: &str) -> bool
+    {
+        // iTunes metadata boxes: text boxes with ©, other known metadata boxes
+        box_type.starts_with('©') ||
+            matches!(
+                box_type,
+                "trkn" |
+                    "disk" |
+                    "tmpo" |
+                    "covr" |
+                    "aART" |
+                    "----" |
+                    "gnre" |
+                    "hdvd" |
+                    "pgap" |
+                    "pcst" |
+                    "cpil" |
+                    "rtng" |
+                    "stik" |
+                    "tven" |
+                    "tves" |
+                    "tvnn" |
+                    "tvsh" |
+                    "tvsn" |
+                    "apID" |
+                    "akID" |
+                    "atID" |
+                    "cnID" |
+                    "geID" |
+                    "plID" |
+                    "sfID" |
+                    "soaa" |
+                    "soal" |
+                    "soar" |
+                    "soco" |
+                    "sonm" |
+                    "sosn" |
+                    "xid " |
+                    "keyw" |
+                    "catg" |
+                    "purl" |
+                    "egid" |
+                    "desc" |
+                    "ldes" |
+                    "sdes"
+            )
     }
 
     /// Parse boxes from file
@@ -178,7 +313,7 @@ impl IsobmffDissector
                 return Err(format!("Box at offset 0x{:08X} extends beyond parent (size: {}, available: {})", current_offset, box_size, end_offset - current_offset));
             }
 
-            let mut isobmff_box = IsobmffBox::new(current_offset, box_type, box_size, header_size);
+            let mut isobmff_box = IsobmffBox::new(current_offset, box_type.clone(), box_size, header_size);
 
             // Parse container contents or read data
             if isobmff_box.is_container
@@ -193,6 +328,24 @@ impl IsobmffDissector
                 }
 
                 isobmff_box.children = Self::parse_boxes(file, content_start, content_end, depth + 1)?;
+
+                // Parse iTunes metadata if this is a metadata box with a 'data' child
+                if Self::is_itunes_metadata_box(&box_type)
+                {
+                    // Look for 'data' child box
+                    if let Some(data_box) = isobmff_box.children.iter().find(|child| child.box_type == "data")
+                    {
+                        if !data_box.data.is_empty()
+                        {
+                            match ItunesMetadata::parse(&box_type, &data_box.data)
+                            {
+                                | Ok(metadata) => isobmff_box.content = Some(metadata),
+                                | Err(_) =>
+                                {} // Ignore parsing errors for now
+                            }
+                        }
+                    }
+                }
             }
             else
             {
@@ -293,7 +446,7 @@ impl MediaDissector for IsobmffDissector
 
             for isobmff_box in &boxes
             {
-                print!("{}", isobmff_box);
+                print!("{}", VerboseBoxDisplay { box_ref: isobmff_box, verbose: options.show_verbose });
             }
         }
 

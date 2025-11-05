@@ -31,7 +31,11 @@ pub enum Commands
 
         /// Show both header and data (default if no options specified)
         #[arg(long)]
-        all: bool
+        all: bool,
+
+        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco)
+        #[arg(long, short)]
+        verbose: bool
     }
 }
 
@@ -39,27 +43,28 @@ pub enum Commands
 #[derive(Debug, Clone)]
 pub struct DebugOptions
 {
-    pub show_header: bool,
-    pub show_data:   bool
+    pub show_header:  bool,
+    pub show_data:    bool,
+    pub show_verbose: bool
 }
 
 impl DebugOptions
 {
-    pub fn from_flags(header: bool, data: bool, all: bool) -> Self
+    pub fn from_flags(header: bool, data: bool, all: bool, verbose: bool) -> Self
     {
         // If no flags specified, default to showing everything
         if !header && !data && !all
         {
-            return DebugOptions { show_header: true, show_data: true };
+            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose };
         }
 
         // If --all is specified, show everything regardless of other flags
         if all
         {
-            return DebugOptions { show_header: true, show_data: true };
+            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose };
         }
 
         // Otherwise, use the specific flags
-        DebugOptions { show_header: header, show_data: data }
+        DebugOptions { show_header: header, show_data: data, show_verbose: verbose }
     }
 }

@@ -21,6 +21,7 @@ mod id3v2_url_frame;
 mod id3v2_user_text_frame;
 mod id3v2_user_url_frame;
 mod isobmff_dissector;
+mod itunes_metadata;
 mod media_dissector;
 mod unknown_dissector;
 
@@ -32,9 +33,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
 
     match cli.command
     {
-        | Commands::Debug { file, header, data, all } =>
+        | Commands::Debug { file, header, data, all, verbose } =>
         {
-            let options = DebugOptions::from_flags(header, data, all);
+            let options = DebugOptions::from_flags(header, data, all, verbose);
             dissect_file(&file, &options)?;
         }
     }
