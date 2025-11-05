@@ -1,21 +1,26 @@
+use std::fmt;
+
 /// Comment Frame (COMM, USLT)
 ///
 /// Structure: Text encoding + Language + Short description + Full text
-use crate::id3v2_text_encoding::{TextEncoding, split_terminated_text};
-use std::fmt;
+use crate::id3v2::text_encoding::{TextEncoding, split_terminated_text};
 
 #[derive(Debug, Clone)]
-pub struct CommentFrame {
-    pub encoding: TextEncoding,
-    pub language: String,
+pub struct CommentFrame
+{
+    pub encoding:    TextEncoding,
+    pub language:    String,
     pub description: String,
-    pub text: String,
+    pub text:        String
 }
 
-impl CommentFrame {
+impl CommentFrame
+{
     /// Parse a COMM or USLT frame from raw data
-    pub fn parse(data: &[u8]) -> Result<Self, String> {
-        if data.len() < 5 {
+    pub fn parse(data: &[u8]) -> Result<Self, String>
+    {
+        if data.len() < 5
+        {
             return Err("Comment frame data too short".to_string());
         }
 
@@ -32,11 +37,14 @@ impl CommentFrame {
     }
 }
 
-impl fmt::Display for CommentFrame {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for CommentFrame
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
         writeln!(f, "Encoding: {}", self.encoding)?;
         writeln!(f, "Language: \"{}\"", self.language)?;
-        if !self.description.is_empty() {
+        if !self.description.is_empty()
+        {
             writeln!(f, "Description: \"{}\"", self.description)?;
         }
         writeln!(f, "Text: \"{}\"", self.text)?;

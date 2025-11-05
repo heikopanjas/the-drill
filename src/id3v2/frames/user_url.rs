@@ -1,25 +1,31 @@
+use std::fmt;
+
 /// User-Defined URL Link Frame (WXXX)
 ///
 /// Structure: Text encoding + Description + URL
-use crate::id3v2_text_encoding::{TextEncoding, decode_iso88591_string, decode_text_with_encoding_simple, find_text_terminator};
-use std::fmt;
+use crate::id3v2::text_encoding::{TextEncoding, decode_iso88591_string, decode_text_with_encoding_simple, find_text_terminator};
 
 #[derive(Debug, Clone)]
-pub struct UserUrlFrame {
-    pub encoding: TextEncoding,
+pub struct UserUrlFrame
+{
+    pub encoding:    TextEncoding,
     pub description: String,
-    pub url: String,
+    pub url:         String
 }
 
-impl UserUrlFrame {
+impl UserUrlFrame
+{
     /// Parse a WXXX frame from raw data
-    pub fn parse(data: &[u8]) -> Result<Self, String> {
-        if data.is_empty() {
+    pub fn parse(data: &[u8]) -> Result<Self, String>
+    {
+        if data.is_empty()
+        {
             return Err("User URL frame data is empty".to_string());
         }
 
         let encoding = TextEncoding::from_byte(data[0])?;
-        if data.len() < 2 {
+        if data.len() < 2
+        {
             return Err("User URL frame data too short".to_string());
         }
 
@@ -36,8 +42,10 @@ impl UserUrlFrame {
     }
 }
 
-impl fmt::Display for UserUrlFrame {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for UserUrlFrame
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
         writeln!(f, "Encoding: {}", self.encoding)?;
         writeln!(f, "Description: \"{}\"", self.description)?;
         writeln!(f, "URL: \"{}\"", self.url)?;

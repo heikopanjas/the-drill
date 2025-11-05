@@ -1,56 +1,75 @@
-use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "supertool")]
 #[command(about = "A versatile media file analysis tool")]
 #[command(version)]
-pub struct Cli {
+pub struct Cli
+{
     #[command(subcommand)]
-    pub command: Commands,
+    pub command: Commands
 }
 
 #[derive(Subcommand)]
-pub enum Commands {
-    /// Debug and analyze media files (ID3v2/MP3, ISO BMFF/MP4)
-    Debug {
+pub enum Commands
+{
+    /// Debug and analyze media files
+    Debug
+    {
         /// Path to the media file to analyze
         file: PathBuf,
 
-        /// Show only header information (ID3v2/ISO BMFF header)
+        /// Show only file header information
         #[arg(long)]
         header: bool,
 
-        /// Show only frames/boxes information
+        /// Show only data structures (ID3v2 frames, ISOBMFF boxes)
         #[arg(long)]
-        frames: bool,
+        data: bool,
 
-        /// Show both header and frames/boxes (default if no options specified)
+        /// Show both header and data (default if no options specified)
         #[arg(long)]
         all: bool,
-    },
+
+        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco)
+        #[arg(long, short)]
+        verbose: bool,
+
+        /// Show hexdump of frame/box data
+        #[arg(long, short)]
+        dump: bool
+    }
 }
 
 /// Options for controlling debug output
 #[derive(Debug, Clone)]
-pub struct DebugOptions {
-    pub show_header: bool,
-    pub show_frames: bool,
+pub struct DebugOptions
+{
+    pub show_header:  bool,
+    pub show_data:    bool,
+    pub show_verbose: bool,
+    pub show_dump:    bool
 }
 
-impl DebugOptions {
-    pub fn from_flags(header: bool, frames: bool, all: bool) -> Self {
+impl DebugOptions
+{
+    pub fn from_flags(header: bool, data: bool, all: bool, verbose: bool, dump: bool) -> Self
+    {
         // If no flags specified, default to showing everything
-        if !header && !frames && !all {
-            return DebugOptions { show_header: true, show_frames: true };
+        if !header && !data && !all
+        {
+            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
         }
 
         // If --all is specified, show everything regardless of other flags
-        if all {
-            return DebugOptions { show_header: true, show_frames: true };
+        if all
+        {
+            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
         }
 
         // Otherwise, use the specific flags
-        DebugOptions { show_header: header, show_frames: frames }
+        DebugOptions { show_header: header, show_data: data, show_verbose: verbose, show_dump: dump }
     }
 }

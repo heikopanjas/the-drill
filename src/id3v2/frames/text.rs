@@ -1,27 +1,33 @@
+use std::fmt;
+
 /// Text Information Frame (T*** frames except TXXX)
 ///
 /// Structure: Text encoding + Information
 /// Examples: TIT2, TALB, TPE1, TPE2, TCON, TYER, etc.
-use crate::id3v2_text_encoding::{TextEncoding, decode_text_with_encoding};
-use std::fmt;
+use crate::id3v2::text_encoding::{TextEncoding, decode_text_with_encoding};
 
 #[derive(Debug, Clone)]
-pub struct TextFrame {
+pub struct TextFrame
+{
     pub encoding: TextEncoding,
-    pub text: String,
+    pub text:     String,
     /// Multiple strings (null-separated in original data)
-    pub strings: Vec<String>,
+    pub strings:  Vec<String>
 }
 
-impl TextFrame {
+impl TextFrame
+{
     /// Parse a text frame from raw data
-    pub fn parse(data: &[u8]) -> Result<Self, String> {
-        if data.is_empty() {
+    pub fn parse(data: &[u8]) -> Result<Self, String>
+    {
+        if data.is_empty()
+        {
             return Err("Text frame data is empty".to_string());
         }
 
         let encoding = TextEncoding::from_byte(data[0])?;
-        if data.len() < 2 {
+        if data.len() < 2
+        {
             return Err("Text frame data too short".to_string());
         }
 
@@ -32,20 +38,27 @@ impl TextFrame {
     }
 
     /// Get the first (primary) text string
-    pub fn primary_text(&self) -> &str {
+    pub fn primary_text(&self) -> &str
+    {
         &self.text
     }
 }
 
-impl fmt::Display for TextFrame {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl fmt::Display for TextFrame
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+    {
         writeln!(f, "Encoding: {}", self.encoding)?;
-        if self.strings.len() > 1 {
+        if self.strings.len() > 1
+        {
             writeln!(f, "Values ({} strings):", self.strings.len())?;
-            for (i, string) in self.strings.iter().enumerate() {
+            for (i, string) in self.strings.iter().enumerate()
+            {
                 writeln!(f, "  [{}] \"{}\"", i + 1, string)?;
             }
-        } else if !self.text.is_empty() {
+        }
+        else if !self.text.is_empty()
+        {
             writeln!(f, "Value: \"{}\"", self.text)?;
         }
         Ok(())
