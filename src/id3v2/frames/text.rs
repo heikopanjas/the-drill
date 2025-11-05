@@ -4,7 +4,7 @@ use std::fmt;
 ///
 /// Structure: Text encoding + Information
 /// Examples: TIT2, TALB, TPE1, TPE2, TCON, TYER, etc.
-use crate::id3v2_text_encoding::{TextEncoding, decode_text_with_encoding};
+use crate::id3v2::text_encoding::{TextEncoding, decode_text_with_encoding};
 
 #[derive(Debug, Clone)]
 pub struct TextFrame

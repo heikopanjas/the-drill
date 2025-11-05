@@ -2,7 +2,11 @@ use std::{fs::File, io::Read};
 
 use owo_colors::OwoColorize;
 
-use crate::{cli::DebugOptions, id3v2_frame::Id3v2Frame, id3v2_tools::*, media_dissector::MediaDissector};
+use crate::{
+    cli::DebugOptions,
+    id3v2::{frame::Id3v2Frame, tools::*},
+    media_dissector::MediaDissector
+};
 
 /// ID3v2.4 dissector for MP3 files
 pub struct Id3v24Dissector;
@@ -24,7 +28,7 @@ pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame>
     }
 
     // Check if this is a valid ID3v2.4 frame ID
-    if !crate::id3v2_tools::is_valid_frame_for_version(&frame_id, 4)
+    if !crate::id3v2::tools::is_valid_frame_for_version(&frame_id, 4)
     {
         return None;
     }
@@ -260,10 +264,10 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         if !is_valid_frame_for_version(frame_id, 4)
         {
             // Create a temporary frame for header display even though it's invalid
-            let temp_frame = crate::id3v2_frame::Id3v2Frame::new_with_offset(frame_id.to_string(), frame_size, frame_flags, pos, Vec::new());
+            let temp_frame = crate::id3v2::frame::Id3v2Frame::new_with_offset(frame_id.to_string(), frame_size, frame_flags, pos, Vec::new());
 
             // Use the unified frame header display function
-            crate::id3v2_tools::display_frame_header(&mut std::io::stdout(), &temp_frame, "    ")?;
+            crate::id3v2::tools::display_frame_header(&mut std::io::stdout(), &temp_frame, "    ")?;
 
             println!("    {}", format!("ERROR: '{}' is not a valid ID3v2.4 frame ID (may be from ID3v2.3 or other version)", frame_id).bright_red());
             println!();
@@ -298,7 +302,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         }
 
         // Create a temporary frame for header display (before full parsing)
-        let temp_frame = crate::id3v2_frame::Id3v2Frame::new_with_offset(
+        let temp_frame = crate::id3v2::frame::Id3v2Frame::new_with_offset(
             frame_id.to_string(),
             frame_size,
             frame_flags,
@@ -307,7 +311,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         );
 
         // Use the unified frame header display function
-        crate::id3v2_tools::display_frame_header(&mut std::io::stdout(), &temp_frame, "    ")?;
+        crate::id3v2::tools::display_frame_header(&mut std::io::stdout(), &temp_frame, "    ")?;
 
         // Parse the frame using the new typed system
         match parse_id3v2_4_frame(&buffer, pos)
@@ -322,13 +326,13 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                     {
                         match content
                         {
-                            | crate::id3v2_frame::Id3v2FrameContent::Chapter(chapter_frame) =>
+                            | crate::id3v2::frame::Id3v2FrameContent::Chapter(chapter_frame) =>
                             {
                                 // Display chapter info
                                 println!("    Element ID: \"{}\"", chapter_frame.element_id);
-                                let start_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.start_time);
-                                let end_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.end_time);
-                                let duration_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.duration());
+                                let start_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.start_time);
+                                let end_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.end_time);
+                                let duration_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.duration());
                                 println!("    Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted);
                                 if chapter_frame.has_byte_offsets()
                                 {
@@ -352,11 +356,11 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                     for sub_frame in &chapter_frame.sub_frames
                                     {
                                         // Display embedded frame with hexdump (includes trailing newline)
-                                        print!("{}", crate::id3v2_chapter_frame::display_embedded_frame_with_dump(sub_frame, "        "));
+                                        print!("{}", crate::id3v2::frames::chapter::display_embedded_frame_with_dump(sub_frame, "        "));
                                     }
                                 }
                             }
-                            | crate::id3v2_frame::Id3v2FrameContent::TableOfContents(toc_frame) =>
+                            | crate::id3v2::frame::Id3v2FrameContent::TableOfContents(toc_frame) =>
                             {
                                 // Display TOC info
                                 println!("    Element ID: \"{}\"", toc_frame.element_id);
@@ -400,7 +404,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                     for sub_frame in &toc_frame.sub_frames
                                     {
                                         // Display embedded frame with hexdump (includes trailing newline)
-                                        print!("{}", crate::id3v2_chapter_frame::display_embedded_frame_with_dump(sub_frame, "        "));
+                                        print!("{}", crate::id3v2::frames::chapter::display_embedded_frame_with_dump(sub_frame, "        "));
                                     }
                                 }
                             }

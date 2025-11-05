@@ -3,7 +3,7 @@ use std::fmt;
 /// Comment Frame (COMM, USLT)
 ///
 /// Structure: Text encoding + Language + Short description + Full text
-use crate::id3v2_text_encoding::{TextEncoding, split_terminated_text};
+use crate::id3v2::text_encoding::{TextEncoding, split_terminated_text};
 
 #[derive(Debug, Clone)]
 pub struct CommentFrame

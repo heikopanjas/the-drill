@@ -1,18 +1,18 @@
 use std::fmt;
 
 // Re-export box types from individual modules
-pub use crate::isobmff_chapter::ChapterBox;
-pub use crate::{
-    isobmff_data_reference::{DataReferenceBox, UrlEntryBox, UrnEntryBox},
-    isobmff_edit_list::EditListBox,
-    isobmff_file_type::FileTypeBox,
-    isobmff_handler::HandlerBox,
-    isobmff_media_header::MediaHeaderBox,
-    isobmff_media_info_header::{NullMediaHeaderBox, SoundMediaHeaderBox, VideoMediaHeaderBox},
-    isobmff_metadata_keys::{MetadataMeanBox, MetadataNameBox},
-    isobmff_movie_header::MovieHeaderBox,
-    isobmff_sample_table::{ChunkOffset64Box, ChunkOffsetBox, SampleDescriptionBox, SampleSizeBox, SampleToChunkBox, TimeToSampleBox},
-    isobmff_track_header::TrackHeaderBox
+pub use crate::isobmff::boxes::chapter::ChapterBox;
+pub use crate::isobmff::boxes::{
+    data_reference::{DataReferenceBox, UrlEntryBox, UrnEntryBox},
+    edit_list::EditListBox,
+    file_type::FileTypeBox,
+    handler::HandlerBox,
+    media_header::MediaHeaderBox,
+    media_info_header::{NullMediaHeaderBox, SoundMediaHeaderBox, VideoMediaHeaderBox},
+    metadata_keys::{MetadataMeanBox, MetadataNameBox},
+    movie_header::MovieHeaderBox,
+    sample_table::{ChunkOffset64Box, ChunkOffsetBox, SampleDescriptionBox, SampleSizeBox, SampleToChunkBox, TimeToSampleBox},
+    track_header::TrackHeaderBox
 };
 
 /// Parsed ISOBMFF box content for various box types

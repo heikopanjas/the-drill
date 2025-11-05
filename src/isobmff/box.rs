@@ -1,4 +1,4 @@
-use crate::{isobmff_content::IsobmffContent, itunes_metadata::ItunesMetadata};
+use crate::isobmff::{content::IsobmffContent, itunes_metadata::ItunesMetadata};
 
 /// Represents an ISOBMFF box (also called "atom")
 #[derive(Debug, Clone)]

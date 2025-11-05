@@ -3,7 +3,7 @@ use std::fmt;
 /// User-Defined Text Information Frame (TXXX)
 ///
 /// Structure: Text encoding + Description + Value
-use crate::id3v2_text_encoding::{TextEncoding, split_terminated_text};
+use crate::id3v2::text_encoding::{TextEncoding, split_terminated_text};
 
 #[derive(Debug, Clone)]
 pub struct UserTextFrame

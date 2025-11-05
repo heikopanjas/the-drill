@@ -1,9 +1,11 @@
 use std::fmt;
 
-use crate::{
-    id3v2_attached_picture_frame::AttachedPictureFrame, id3v2_chapter_frame::ChapterFrame, id3v2_comment_frame::CommentFrame,
-    id3v2_table_of_contents_frame::TableOfContentsFrame, id3v2_text_frame::TextFrame, id3v2_tools::get_frame_description,
-    id3v2_unique_file_id_frame::UniqueFileIdFrame, id3v2_url_frame::UrlFrame, id3v2_user_text_frame::UserTextFrame, id3v2_user_url_frame::UserUrlFrame
+use crate::id3v2::{
+    frames::{
+        attached_picture::AttachedPictureFrame, chapter::ChapterFrame, comment::CommentFrame, table_of_contents::TableOfContentsFrame, text::TextFrame,
+        unique_file_id::UniqueFileIdFrame, url::UrlFrame, user_text::UserTextFrame, user_url::UserUrlFrame
+    },
+    tools::get_frame_description
 };
 
 /// Parsed content of an ID3v2 frame
@@ -84,7 +86,7 @@ impl Id3v2Frame
     pub fn parse_content(&mut self, version_major: u8) -> Result<(), String>
     {
         // Validate that this frame is valid for the given ID3v2 version
-        if !crate::id3v2_tools::is_valid_frame_for_version(&self.id, version_major)
+        if !crate::id3v2::tools::is_valid_frame_for_version(&self.id, version_major)
         {
             // Invalid frame for this version, store as binary data
             self.content = Some(Id3v2FrameContent::Binary);

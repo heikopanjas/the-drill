@@ -6,7 +6,11 @@ use std::{
 
 use owo_colors::OwoColorize;
 
-use crate::{cli::DebugOptions, isobmff_box::IsobmffBox, isobmff_content::*, itunes_metadata::ItunesMetadata, media_dissector::MediaDissector};
+use crate::{
+    cli::DebugOptions,
+    isobmff::{r#box::IsobmffBox, content::*, itunes_metadata::ItunesMetadata},
+    media_dissector::MediaDissector
+};
 
 /// Wrapper for displaying box with verbose option
 pub struct VerboseBoxDisplay<'a>

@@ -4,8 +4,8 @@ use std::fmt;
 ///
 /// Structure: Element ID + Start time + End time + Start offset + End offset + Sub-frames
 /// Part of ID3v2 Chapter Frame Addendum specification
-use crate::id3v2_text_encoding::decode_iso88591_string;
-use crate::{id3v2_frame::Id3v2Frame, id3v2_tools::get_frame_description};
+use crate::id3v2::text_encoding::decode_iso88591_string;
+use crate::id3v2::{frame::Id3v2Frame, tools::get_frame_description};
 
 /// Format a timestamp from milliseconds to "hh:mm:ss.ms" format
 pub fn format_timestamp(ms: u32) -> String
@@ -96,7 +96,7 @@ impl ChapterFrame
         // Parse embedded sub-frames (rest of the data)
         let sub_frames = if pos < data.len()
         {
-            crate::id3v2_tools::parse_embedded_frames(&data[pos..], version_major)
+            crate::id3v2::tools::parse_embedded_frames(&data[pos..], version_major)
         }
         else
         {
@@ -163,7 +163,7 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
 {
     // Use the new unified frame header display function
     let mut buffer = Vec::new();
-    if let Err(_) = crate::id3v2_tools::display_frame_header(&mut buffer, frame, "        ")
+    if let Err(_) = crate::id3v2::tools::display_frame_header(&mut buffer, frame, "        ")
     {
         // Fallback to basic display if header function fails
         writeln!(f, "        Frame: {} - Size: {} bytes", frame.id, frame.size)?;
@@ -221,7 +221,7 @@ pub fn display_embedded_frame_with_dump(frame: &Id3v2Frame, indent: &str) -> Str
 
     // Display frame header
     let mut buffer = Vec::new();
-    let _ = crate::id3v2_tools::display_frame_header(&mut buffer, frame, indent);
+    let _ = crate::id3v2::tools::display_frame_header(&mut buffer, frame, indent);
     if let Ok(header_str) = String::from_utf8(buffer)
     {
         output.push_str(&header_str);

@@ -3,7 +3,7 @@ use std::fmt;
 /// Unique File Identifier Frame (UFID)
 ///
 /// Structure: Owner identifier + Identifier
-use crate::id3v2_text_encoding::decode_iso88591_string;
+use crate::id3v2::text_encoding::decode_iso88591_string;
 
 #[derive(Debug, Clone)]
 pub struct UniqueFileIdFrame

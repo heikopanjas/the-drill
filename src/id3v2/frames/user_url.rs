@@ -3,7 +3,7 @@ use std::fmt;
 /// User-Defined URL Link Frame (WXXX)
 ///
 /// Structure: Text encoding + Description + URL
-use crate::id3v2_text_encoding::{TextEncoding, decode_iso88591_string, decode_text_with_encoding_simple, find_text_terminator};
+use crate::id3v2::text_encoding::{TextEncoding, decode_iso88591_string, decode_text_with_encoding_simple, find_text_terminator};
 
 #[derive(Debug, Clone)]
 pub struct UserUrlFrame

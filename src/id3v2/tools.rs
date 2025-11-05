@@ -280,7 +280,7 @@ pub fn is_valid_frame_for_version(frame_id: &str, version_major: u8) -> bool
 
 /// Parse embedded frames from raw frame data
 /// Used by both CHAP and CTOC frames to parse their embedded sub-frames
-pub fn parse_embedded_frames(frame_data: &[u8], version_major: u8) -> Vec<crate::id3v2_frame::Id3v2Frame>
+pub fn parse_embedded_frames(frame_data: &[u8], version_major: u8) -> Vec<crate::id3v2::frame::Id3v2Frame>
 {
     let mut embedded_frames = Vec::new();
     let mut pos = 0;
@@ -326,7 +326,7 @@ pub fn parse_embedded_frames(frame_data: &[u8], version_major: u8) -> Vec<crate:
         let data = frame_data[pos + 10..pos + 10 + frame_size as usize].to_vec();
 
         // Create the embedded frame with relative offset within the parent frame
-        let mut embedded_frame = crate::id3v2_frame::Id3v2Frame::new_with_offset(frame_id, frame_size, frame_flags, pos, data);
+        let mut embedded_frame = crate::id3v2::frame::Id3v2Frame::new_with_offset(frame_id, frame_size, frame_flags, pos, data);
 
         // Parse the embedded frame content for rich display
         if let Err(_e) = embedded_frame.parse_content(version_major)
@@ -345,7 +345,7 @@ pub fn parse_embedded_frames(frame_data: &[u8], version_major: u8) -> Vec<crate:
 
 /// Display frame header information with customizable indentation
 /// This function provides unified frame header display for both top-level and embedded frames
-pub fn display_frame_header(output: &mut dyn Write, frame: &crate::id3v2_frame::Id3v2Frame, indentation: &str) -> std::io::Result<()>
+pub fn display_frame_header(output: &mut dyn Write, frame: &crate::id3v2::frame::Id3v2Frame, indentation: &str) -> std::io::Result<()>
 {
     // Extract the individual bytes from the frame ID for diagnostic display
     let id_bytes = frame.id.as_bytes();

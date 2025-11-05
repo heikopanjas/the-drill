@@ -1,11 +1,11 @@
 use std::fmt;
 
-use crate::id3v2_frame::Id3v2Frame;
+use crate::id3v2::frame::Id3v2Frame;
 /// Table of Contents Frame (CTOC)
 ///
 /// Structure: Element ID + TOC flags + Entry count + Child element IDs + Sub-frames
 /// Part of ID3v2 Chapter Frame Addendum specification
-use crate::id3v2_text_encoding::decode_iso88591_string;
+use crate::id3v2::text_encoding::decode_iso88591_string;
 
 #[derive(Debug, Clone)]
 pub struct TableOfContentsFrame
@@ -87,7 +87,7 @@ impl TableOfContentsFrame
         // Parse embedded sub-frames (rest of the data)
         let sub_frames = if pos < data.len()
         {
-            crate::id3v2_tools::parse_embedded_frames(&data[pos..], version_major)
+            crate::id3v2::tools::parse_embedded_frames(&data[pos..], version_major)
         }
         else
         {
@@ -136,7 +136,7 @@ impl fmt::Display for TableOfContentsFrame
             for (i, sub_frame) in self.sub_frames.iter().enumerate()
             {
                 // Display content with embedded frame formatting helper (same as CHAP)
-                crate::id3v2_chapter_frame::display_embedded_frame_content(f, sub_frame)?;
+                crate::id3v2::frames::chapter::display_embedded_frame_content(f, sub_frame)?;
                 // Add newline between embedded frames but not after the last one
                 if i < self.sub_frames.len() - 1
                 {

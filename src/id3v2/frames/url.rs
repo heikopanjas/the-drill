@@ -4,7 +4,7 @@ use std::fmt;
 ///
 /// Structure: URL (text string)
 /// Examples: WCOM, WCOP, WOAF, WOAR, WOAS, WORS, WPAY, WPUB
-use crate::id3v2_text_encoding::decode_iso88591_string;
+use crate::id3v2::text_encoding::decode_iso88591_string;
 
 #[derive(Debug, Clone)]
 pub struct UrlFrame
