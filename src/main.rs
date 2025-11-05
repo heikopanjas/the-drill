@@ -6,6 +6,7 @@ use crate::cli::{Cli, Commands, DebugOptions};
 
 mod cli;
 mod dissector_builder;
+mod hexdump;
 mod id3v2_3_dissector;
 mod id3v2_4_dissector;
 mod id3v2_attached_picture_frame;
@@ -33,9 +34,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
 
     match cli.command
     {
-        | Commands::Debug { file, header, data, all, verbose } =>
+        | Commands::Debug { file, header, data, all, verbose, dump } =>
         {
-            let options = DebugOptions::from_flags(header, data, all, verbose);
+            let options = DebugOptions::from_flags(header, data, all, verbose, dump);
             dissect_file(&file, &options)?;
         }
     }

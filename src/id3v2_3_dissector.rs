@@ -309,7 +309,146 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
         {
             | Some(frame) =>
             {
-                print!("    {}", frame);
+                // Display frame content differently based on dump flag
+                if options.show_dump
+                {
+                    // For frames with embedded content, handle display manually
+                    if let Some(content) = &frame.content
+                    {
+                        match content
+                        {
+                            | crate::id3v2_frame::Id3v2FrameContent::Chapter(chapter_frame) =>
+                            {
+                                // Display chapter info
+                                println!("    Element ID: \"{}\"", chapter_frame.element_id);
+                                let start_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.start_time);
+                                let end_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.end_time);
+                                let duration_formatted = crate::id3v2_chapter_frame::format_timestamp(chapter_frame.duration());
+                                println!("    Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted);
+                                if chapter_frame.has_byte_offsets()
+                                {
+                                    println!("    Byte offsets: {} - {}", chapter_frame.start_offset, chapter_frame.end_offset);
+                                }
+
+                                // Show main frame raw data first
+                                println!("    Raw data:");
+                                let hexdump = crate::hexdump::format_hexdump(&frame.data, 0);
+                                for line in hexdump.lines()
+                                {
+                                    println!("    {}", line);
+                                }
+                                println!();
+
+                                if !chapter_frame.sub_frames.is_empty()
+                                {
+                                    println!("    Sub-frames: {} embedded frame(s)", chapter_frame.sub_frames.len());
+                                    println!();
+
+                                    for sub_frame in &chapter_frame.sub_frames
+                                    {
+                                        // Display embedded frame with hexdump (includes trailing newline)
+                                        print!("{}", crate::id3v2_chapter_frame::display_embedded_frame_with_dump(sub_frame, "        "));
+                                    }
+                                }
+                            }
+                            | crate::id3v2_frame::Id3v2FrameContent::TableOfContents(toc_frame) =>
+                            {
+                                // Display TOC info
+                                println!("    Element ID: \"{}\"", toc_frame.element_id);
+                                if toc_frame.top_level
+                                {
+                                    println!("    Flags: Top-level TOC");
+                                }
+                                if toc_frame.ordered
+                                {
+                                    println!("    Flags: Ordered");
+                                }
+
+                                if !toc_frame.child_element_ids.is_empty()
+                                {
+                                    print!("    Child elements ({}): ", toc_frame.child_element_ids.len());
+                                    for (i, child_id) in toc_frame.child_element_ids.iter().enumerate()
+                                    {
+                                        print!("[{}] \"{}\"", i + 1, child_id);
+                                        if i < toc_frame.child_element_ids.len() - 1
+                                        {
+                                            print!(", ");
+                                        }
+                                    }
+                                    println!();
+                                }
+
+                                // Show main frame raw data first
+                                println!("    Raw data:");
+                                let hexdump = crate::hexdump::format_hexdump(&frame.data, 0);
+                                for line in hexdump.lines()
+                                {
+                                    println!("    {}", line);
+                                }
+                                println!();
+
+                                if !toc_frame.sub_frames.is_empty()
+                                {
+                                    println!("    Sub-frames: {} embedded frame(s)", toc_frame.sub_frames.len());
+                                    println!();
+
+                                    for sub_frame in &toc_frame.sub_frames
+                                    {
+                                        // Display embedded frame with hexdump (includes trailing newline)
+                                        print!("{}", crate::id3v2_chapter_frame::display_embedded_frame_with_dump(sub_frame, "        "));
+                                    }
+                                }
+                            }
+                            | _ =>
+                            {
+                                // Standard frame display
+                                print!("    {}", frame);
+
+                                println!("    Raw data:");
+                                // Limit hexdump for APIC frames (cover art) to 128 bytes
+                                let hexdump = if frame.id == "APIC"
+                                {
+                                    crate::hexdump::format_hexdump_limited(&frame.data, 0, Some(128))
+                                }
+                                else
+                                {
+                                    crate::hexdump::format_hexdump(&frame.data, 0)
+                                };
+                                for line in hexdump.lines()
+                                {
+                                    println!("    {}", line);
+                                }
+                                println!();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // No parsed content, show standard display
+                        print!("    {}", frame);
+
+                        println!("    Raw data:");
+                        // Limit hexdump for APIC frames (cover art) to 128 bytes
+                        let hexdump = if frame.id == "APIC"
+                        {
+                            crate::hexdump::format_hexdump_limited(&frame.data, 0, Some(128))
+                        }
+                        else
+                        {
+                            crate::hexdump::format_hexdump(&frame.data, 0)
+                        };
+                        for line in hexdump.lines()
+                        {
+                            println!("    {}", line);
+                        }
+                        println!();
+                    }
+                }
+                else
+                {
+                    // No dump flag, use standard Display
+                    print!("    {}", frame);
+                }
             }
             | None =>
             {

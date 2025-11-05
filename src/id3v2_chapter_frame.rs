@@ -7,8 +7,8 @@ use std::fmt;
 use crate::id3v2_text_encoding::decode_iso88591_string;
 use crate::{id3v2_frame::Id3v2Frame, id3v2_tools::get_frame_description};
 
-/// Format milliseconds as hh:mm:ss.ms
-fn format_timestamp(ms: u32) -> String
+/// Format a timestamp from milliseconds to "hh:mm:ss.ms" format
+pub fn format_timestamp(ms: u32) -> String
 {
     let total_seconds = ms / 1000;
     let milliseconds = ms % 1000;
@@ -212,4 +212,76 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
         }
     }
     Ok(())
+}
+
+/// Helper function to display embedded frame content with hexdump
+pub fn display_embedded_frame_with_dump(frame: &Id3v2Frame, indent: &str) -> String
+{
+    let mut output = String::new();
+
+    // Display frame header
+    let mut buffer = Vec::new();
+    let _ = crate::id3v2_tools::display_frame_header(&mut buffer, frame, indent);
+    if let Ok(header_str) = String::from_utf8(buffer)
+    {
+        output.push_str(&header_str);
+    }
+
+    // Display frame info
+    output.push_str(&format!("{}Frame: {} ({}) - Size: {} bytes\n", indent, frame.id, get_frame_description(&frame.id), frame.size));
+
+    // Display content
+    if let Some(content) = &frame.content
+    {
+        let content_str = format!("{}", content);
+        for line in content_str.lines()
+        {
+            if !line.is_empty()
+            {
+                output.push_str(&format!("{}    {}\n", indent, line));
+            }
+            else
+            {
+                output.push('\n');
+            }
+        }
+    }
+    else
+    {
+        // Fallback for unparsed frames
+        if let Some(text) = frame.get_text()
+        {
+            if !text.is_empty()
+            {
+                output.push_str(&format!("{}    Text: \"{}\"\n", indent, text));
+            }
+        }
+        else if let Some(url) = frame.get_url()
+        {
+            output.push_str(&format!("{}    URL: \"{}\"\n", indent, url));
+        }
+    }
+
+    // Display hexdump
+    output.push_str(&format!("{}    Raw data:\n", indent));
+
+    // Limit hexdump for APIC frames (cover art) to 128 bytes
+    let hexdump = if frame.id == "APIC"
+    {
+        crate::hexdump::format_hexdump_limited(&frame.data, 0, Some(128))
+    }
+    else
+    {
+        crate::hexdump::format_hexdump(&frame.data, 0)
+    };
+
+    for line in hexdump.lines()
+    {
+        output.push_str(&format!("{}    {}\n", indent, line));
+    }
+
+    // Add newline for separation between embedded frames
+    output.push('\n');
+
+    output
 }

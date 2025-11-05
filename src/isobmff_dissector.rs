@@ -106,15 +106,16 @@ impl IsobmffBox
 /// Wrapper for displaying box with verbose option
 pub struct VerboseBoxDisplay<'a>
 {
-    pub box_ref: &'a IsobmffBox,
-    pub verbose: bool
+    pub box_ref:   &'a IsobmffBox,
+    pub verbose:   bool,
+    pub show_dump: bool
 }
 
 impl<'a> fmt::Display for VerboseBoxDisplay<'a>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
     {
-        self.box_ref.fmt_with_indent_and_options(f, 0, self.verbose)
+        self.box_ref.fmt_with_indent_and_options(f, 0, self.verbose, self.show_dump)
     }
 }
 
@@ -130,10 +131,10 @@ impl IsobmffBox
 {
     fn fmt_with_indent(&self, f: &mut fmt::Formatter<'_>, indent: usize) -> fmt::Result
     {
-        self.fmt_with_indent_and_options(f, indent, false)
+        self.fmt_with_indent_and_options(f, indent, false, false)
     }
 
-    fn fmt_with_indent_and_options(&self, f: &mut fmt::Formatter<'_>, indent: usize, verbose: bool) -> fmt::Result
+    fn fmt_with_indent_and_options(&self, f: &mut fmt::Formatter<'_>, indent: usize, verbose: bool, show_dump: bool) -> fmt::Result
     {
         // Skip certain technical boxes unless verbose mode is enabled
         if !verbose && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64")
@@ -170,12 +171,33 @@ impl IsobmffBox
             }
         }
 
+        // Show hexdump if requested and box has data
+        if show_dump && !self.data.is_empty()
+        {
+            writeln!(f, "{}    Raw data:", indent_str)?;
+            // Limit hexdump for covr boxes (cover art) and large data boxes (likely images) to 128 bytes
+            // Data boxes > 1KB are likely image data inside covr/artwork containers
+            let hexdump = if self.box_type == "covr" || (self.box_type == "data" && self.data.len() > 1024)
+            {
+                crate::hexdump::format_hexdump_limited(&self.data, 0, Some(128))
+            }
+            else
+            {
+                crate::hexdump::format_hexdump(&self.data, 0)
+            };
+            for line in hexdump.lines()
+            {
+                writeln!(f, "{}    {}", indent_str, line)?;
+            }
+            writeln!(f)?;
+        }
+
         // Display children for container boxes
         if self.is_container && !self.children.is_empty()
         {
             for child in &self.children
             {
-                child.fmt_with_indent_and_options(f, indent + 1, verbose)?;
+                child.fmt_with_indent_and_options(f, indent + 1, verbose, show_dump)?;
             }
         }
 
@@ -446,7 +468,7 @@ impl MediaDissector for IsobmffDissector
 
             for isobmff_box in &boxes
             {
-                print!("{}", VerboseBoxDisplay { box_ref: isobmff_box, verbose: options.show_verbose });
+                print!("{}", VerboseBoxDisplay { box_ref: isobmff_box, verbose: options.show_verbose, show_dump: options.show_dump });
             }
         }
 
