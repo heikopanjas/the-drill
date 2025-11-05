@@ -12,7 +12,87 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
 - Ensure cross-platform compatibility (macOS, Windows, Linux)
 - Use `rustfmt` for code formatting
 - Run `clippy` for linting and suggestions
-- Write clear, descriptive commit messages using conventional commits format
+
+#### Commit Message Guidelines
+
+Follow these rules to prevent terminal crashes and ensure clean git history using conventional commits format:
+
+**Message Format:**
+
+```text
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+**Character Limits:**
+
+- **Subject line**: Maximum 50 characters (strict limit)
+- **Body lines**: Wrap at 72 characters per line
+- **Total message**: Keep under 500 characters total
+- **Blank line**: Always add blank line between subject and body
+
+**Subject Line Rules:**
+
+- Use conventional commit types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `build`, `ci`, `perf`
+- Scope is optional but recommended: `feat(api):`, `fix(build):`, `docs(readme):`
+- Use imperative mood: "add feature" not "added feature"
+- No period at end of subject line
+- Keep concise and descriptive
+
+**Body Rules (if needed):**
+
+- Add blank line after subject before body
+- Wrap each line at 72 characters maximum
+- Explain what and why, not how
+- Use bullet points (`-`) for multiple items with lowercase text after bullet
+- Keep it concise
+
+**Special Character Safety:**
+
+- Avoid nested quotes or complex quoting
+- Avoid special shell characters: `$`, `` ` ``, `!`, `\`, `\`, `|`, `&`, `;`
+- Use simple punctuation only
+- No emoji or unicode characters
+
+**Best Practices:**
+
+- **Break up large commits**: Split into smaller, focused commits with shorter messages
+- **One concern per commit**: Each commit should address one specific change
+- **Test before committing**: Ensure code builds and works
+- **Reference issues**: Use `#123` format in footer if applicable
+
+**Examples:**
+
+Good:
+
+```text
+feat(api): add KStringTrim function
+
+- add trimming function to remove whitespace from
+  both ends of string
+- supports all encodings
+```
+
+Good (short):
+
+```text
+fix(build): correct static library output name
+```
+
+Bad (too long):
+
+```text
+feat(api): add a new comprehensive string trimming function that handles all edge cases including UTF-8, UTF-16LE, UTF-16BE, and ANSI encodings with proper boundary checking and memory management
+```
+
+Bad (special characters):
+
+```text
+fix: update `KString` with "nested 'quotes'" & $special chars!
+```
 
 ### Project Structure
 
@@ -219,4 +299,6 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
 ### 2025-11-05
 
 - **ISOBMFF dissector implementation**: Added comprehensive ISO Base Media File Format (ISOBMFF) dissector supporting MP4, MOV, M4A, M4V, 3GP, and other container formats
-- **Reasoning**: Implemented full ISOBMFF box parsing with hierarchical structure analysis. Created `src/isobmff_dissector.rs` module following the existing `MediaDissector` trait pattern. The dissector includes: recursive box parsing with depth limiting, support for both 32-bit and 64-bit box sizes, automatic container box detection for 17 container types (moov, trak, mdia, minf, stbl, etc.), comprehensive box type descriptions covering 80+ standard box types from ISO/IEC 14496-12, color-coded hierarchical output (containers in cyan, special boxes like ftyp/mdat in yellow), ftyp box detail parsing showing major brand, minor version, and compatible brands, intelligent handling of large mdat boxes (skips reading multi-MB media data), and integration with DissectorBuilder for automatic format detection based on ftyp box presence and brand validation. The implementation supports the debug command's --header and --frames options for granular output control. This expands the tool's capabilities beyond ID3v2 to analyze modern media container formats while maintaining the same architectural patterns and user experience.
+- **Reasoning**: Implemented full ISOBMFF box parsing with hierarchical structure analysis. Created `src/isobmff_dissector.rs` module (628 lines) following the existing `MediaDissector` trait pattern. The dissector includes: recursive box parsing with depth limiting (max 20 levels), support for both 32-bit and 64-bit box sizes, automatic container box detection for 18 container types (moov, trak, edts, mdia, minf, dinf, stbl, mvex, moof, traf, mfra, meta, ipro, sinf, rinf, udta, tref, ilst, trgr, grpl), comprehensive box type descriptions covering 150+ box types including 80+ ISO/IEC 14496-12 standard boxes, 50+ iTunes metadata boxes with MacRoman encoding support (©nam, ©ART, ©alb, etc.), 15 video codecs (H.264 variants, HEVC, VP8/9, AV1, Dolby Vision), 20 audio codecs (AAC, Opus, FLAC, ALAC, DTS, Dolby, PCM variants), 6 text/subtitle formats (tx3g, wvtt, c608/708), 7 protection/encryption boxes, 16 audio/video configuration boxes, 5 DASH/streaming boxes, and 9 QuickTime-specific boxes. Features include: color-coded hierarchical output (containers in cyan, special boxes like ftyp/mdat in yellow), ftyp box detail parsing showing major brand, minor version, and compatible brands, special handling for meta box (FullBox with version/flags header), intelligent handling of large mdat boxes (skips reading media data >1MB for efficiency), and integration with DissectorBuilder for automatic format detection based on ftyp box presence and validation of 25+ brand codes (isom, iso2, mp41, mp42, M4V, M4A, f4v, etc.). The implementation supports the debug command's --header and --frames options for granular output control. Tested with 90MB podcast M4A file showing zero "Unknown Box Type" warnings, demonstrating comprehensive coverage. This expands the tool's capabilities beyond ID3v2 to analyze modern media container formats while maintaining the same architectural patterns and user experience.
+- **Commit message guidelines integration**: Properly integrated user-added Commit Message Guidelines section into AGENTS.md documentation structure
+- **Reasoning**: Moved the standalone "Commit Message Guidelines - CRITICAL" section to be a subsection under "Code Style & Standards" with proper heading hierarchy (#### instead of ###). Removed duplication with the generic "write clear commit messages" line that was replaced by comprehensive guidelines. The integration ensures the detailed commit message rules (character limits, special character safety, conventional commits format, examples) are properly organized within the document structure while remaining easy to find and reference as part of standard development practices. This improves document coherence and maintains logical flow from project overview → development guidelines → technical details → changelog.
