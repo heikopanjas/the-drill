@@ -120,28 +120,46 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
   - `src/dissector_builder.rs` - Builder pattern for automatic dissector selection
   - `src/unknown_dissector.rs` - Fallback dissector for unrecognized formats
   - `src/cli.rs` - CLI argument structures and commands
-  - `src/id3v2_3_dissector.rs` - Specialized ID3v2.3 frame dissection
-  - `src/id3v2_4_dissector.rs` - Specialized ID3v2.4 frame dissection
-  - `src/id3v2_frame.rs` - ID3v2 frame data structure and parsing utilities
-  - `src/id3v2_text_encoding.rs` - Text encoding types and decoding utilities for ID3v2 frames
-  - `src/id3v2_text_frame.rs` - Text Information Frame (T*** frames except TXXX)
-  - `src/id3v2_url_frame.rs` - URL Link Frame (W*** frames except WXXX)
-  - `src/id3v2_user_text_frame.rs` - User-Defined Text Information Frame (TXXX)
-  - `src/id3v2_user_url_frame.rs` - User-Defined URL Link Frame (WXXX)
-  - `src/id3v2_comment_frame.rs` - Comment Frame (COMM, USLT)
-  - `src/id3v2_attached_picture_frame.rs` - Attached Picture Frame (APIC)
-  - `src/id3v2_unique_file_id_frame.rs` - Unique File Identifier Frame (UFID)
-  - `src/id3v2_chapter_frame.rs` - Chapter Frame (CHAP) from ID3v2 Chapter Frame Addendum
-  - `src/id3v2_table_of_contents_frame.rs` - Table of Contents Frame (CTOC) from ID3v2 Chapter Frame Addendum
-  - `src/id3v2_tools.rs` - Utility functions for ID3v2 processing (synchsafe integers, unsynchronization, frame flags)
-  - `src/isobmff_box.rs` - ISOBMFF box data structure and container type detection
-  - `src/isobmff_content.rs` - Standard ISOBMFF box content parsing (ftyp, mvhd, tkhd, mdhd, hdlr, etc.)
-  - `src/isobmff_dissector.rs` - ISO Base Media File Format (MP4, MOV, M4A, etc.) box dissection
-  - `src/itunes_metadata.rs` - iTunes metadata box content parsing and data types for ISOBMFF files
   - `src/hexdump.rs` - Hexdump formatting utility for displaying raw data
+
+- ID3v2 modules (`src/id3v2/`):
+  - `src/id3v2.rs` - Module entry point and re-exports
+  - `src/id3v2/frame.rs` - ID3v2 frame data structure and parsing utilities
+  - `src/id3v2/text_encoding.rs` - Text encoding types and decoding utilities
+  - `src/id3v2/tools.rs` - Utility functions (synchsafe integers, unsynchronization, frame flags)
+  - `src/id3v2/dissectors/v3.rs` - Specialized ID3v2.3 frame dissection
+  - `src/id3v2/dissectors/v4.rs` - Specialized ID3v2.4 frame dissection
+  - `src/id3v2/frames/text.rs` - Text Information Frame (T*** frames except TXXX)
+  - `src/id3v2/frames/url.rs` - URL Link Frame (W*** frames except WXXX)
+  - `src/id3v2/frames/user_text.rs` - User-Defined Text Information Frame (TXXX)
+  - `src/id3v2/frames/user_url.rs` - User-Defined URL Link Frame (WXXX)
+  - `src/id3v2/frames/comment.rs` - Comment Frame (COMM, USLT)
+  - `src/id3v2/frames/attached_picture.rs` - Attached Picture Frame (APIC)
+  - `src/id3v2/frames/unique_file_id.rs` - Unique File Identifier Frame (UFID)
+  - `src/id3v2/frames/chapter.rs` - Chapter Frame (CHAP) from ID3v2 Chapter Frame Addendum
+  - `src/id3v2/frames/table_of_contents.rs` - Table of Contents Frame (CTOC)
+
+- ISOBMFF modules (`src/isobmff/`):
+  - `src/isobmff.rs` - Module entry point and re-exports
+  - `src/isobmff/box.rs` - ISOBMFF box data structure and container type detection
+  - `src/isobmff/content.rs` - Content enum and re-exports for all box types
+  - `src/isobmff/dissector.rs` - ISO Base Media File Format (MP4, MOV, M4A, etc.) box dissection
+  - `src/isobmff/itunes_metadata.rs` - iTunes metadata box content parsing and data types
+  - `src/isobmff/boxes/file_type.rs` - FileTypeBox (ftyp)
+  - `src/isobmff/boxes/movie_header.rs` - MovieHeaderBox (mvhd)
+  - `src/isobmff/boxes/track_header.rs` - TrackHeaderBox (tkhd)
+  - `src/isobmff/boxes/media_header.rs` - MediaHeaderBox (mdhd)
+  - `src/isobmff/boxes/handler.rs` - HandlerBox (hdlr)
+  - `src/isobmff/boxes/media_info_header.rs` - VideoMediaHeaderBox, SoundMediaHeaderBox, NullMediaHeaderBox
+  - `src/isobmff/boxes/data_reference.rs` - DataReferenceBox, UrlEntryBox, UrnEntryBox
+  - `src/isobmff/boxes/sample_table.rs` - Sample table boxes (stsd, stts, stsc, stsz, stco, co64)
+  - `src/isobmff/boxes/edit_list.rs` - EditListBox (elst)
+  - `src/isobmff/boxes/chapter.rs` - ChapterBox (chap)
+  - `src/isobmff/boxes/metadata_keys.rs` - MetadataMeanBox, MetadataNameBox (mean, name)
 
 - Use Cargo for dependency management and builds
 - Follow "one struct/trait per file" organization principle
+- Organized into hierarchical module structure with clear separation between ID3v2 and ISOBMFF code
 
 ### Dependencies
 
@@ -339,3 +357,7 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **Reasoning**: Extended `IsobmffContent` enum with four new variants: `ChapterReference` (chap box containing track ID list), `NullMediaHeader` (nmhd box with version field), `MetadataMean` (mean box containing namespace like "com.apple.iTunes"), and `MetadataName` (name box containing key name like "iTunSMPB"). Implemented parsing functions `parse_chap()`, `parse_nmhd()`, `parse_mean()`, and `parse_name()` in `src/isobmff_content.rs`. Added Display trait implementations showing track IDs as array for chap, version for nmhd, and namespace/name strings for mean/name boxes. Wired up parsers in `src/isobmff_dissector.rs` content matching. The chap box parsing reveals chapter track references (e.g., [2, 3] indicating tracks 2 and 3 contain chapter metadata). The mean/name boxes are crucial for understanding custom iTunes metadata in '----' boxes, showing the namespace and key that identify the metadata type. Tested with M4A podcast file showing "Chapter Track IDs: [2, 3]", "Namespace: com.apple.iTunes", and "Name: iTunSMPB" correctly parsed and displayed. This completes the container analysis by parsing all structural metadata boxes that were previously showing only raw data.
 - **ISOBMFF box type modularization**: Split `isobmff_content.rs` into individual files following "one struct/trait per file" principle, matching ID3v2 frame architecture
 - **Reasoning**: Refactored monolithic 869-line `isobmff_content.rs` into 11 focused modules: `isobmff_file_type.rs` (FileTypeBox for ftyp), `isobmff_movie_header.rs` (MovieHeaderBox for mvhd), `isobmff_track_header.rs` (TrackHeaderBox for tkhd), `isobmff_media_header.rs` (MediaHeaderBox for mdhd), `isobmff_handler.rs` (HandlerBox for hdlr), `isobmff_media_info_header.rs` (VideoMediaHeaderBox/SoundMediaHeaderBox/NullMediaHeaderBox for vmhd/smhd/nmhd), `isobmff_data_reference.rs` (DataReferenceBox/UrlEntryBox/UrnEntryBox for dref/url /urn ), `isobmff_sample_table.rs` (SampleDescriptionBox/TimeToSampleBox/SampleToChunkBox/SampleSizeBox/ChunkOffsetBox/ChunkOffset64Box for stsd/stts/stsc/stsz/stco/co64), `isobmff_edit_list.rs` (EditListBox for elst), `isobmff_chapter.rs` (ChapterBox for chap), and `isobmff_metadata_keys.rs` (MetadataMeanBox/MetadataNameBox for mean/name). Each module contains its own struct definition, parse() method, and Display trait implementation. Updated `isobmff_content.rs` to a lean 72-line file containing only the `IsobmffContent` enum with variants wrapping the individual box types, Display trait delegation, and re-exports. Modified `isobmff_dissector.rs` to call individual box parsing methods (e.g., `FileTypeBox::parse()`) and wrap results in enum variants. Registered all 11 new modules in `main.rs`. This architectural change mirrors the successful ID3v2 frame modularization, improving code maintainability, reducing file size, following Rust best practices for module organization, enabling easier testing of individual box types, and making the codebase more navigable. Each box type now has clear single responsibility with parsing and display logic colocated.
+- **Project structure documentation update**: Updated AGENTS.md to reflect the current hierarchical module organization
+- **Reasoning**: Reorganized the Project Structure section to accurately document the current codebase after extensive refactoring. The documentation now shows the proper hierarchical module structure with ID3v2 modules under `src/id3v2/` (including `frame.rs`, `text_encoding.rs`, `tools.rs`, `dissectors/v3.rs`, `dissectors/v4.rs`, and nine frame type modules under `frames/`) and ISOBMFF modules under `src/isobmff/` (including `box.rs`, `content.rs`, `dissector.rs`, `itunes_metadata.rs`, and 11 box type modules under `boxes/`). This replaces the previous flat file listing that referenced non-existent files like `id3v2_frame.rs`, `id3v2_tools.rs`, etc. The updated documentation provides accurate guidance for navigating the modular architecture and makes it clear how the "one struct/trait per file" principle has been applied throughout both the ID3v2 and ISOBMFF subsystems.
+- **Version bump to 2.0.0**: Updated project version from 1.0.5 to 2.0.0
+- **Reasoning**: The addition of comprehensive ISOBMFF support with full box parsing, iTunes metadata extraction, and modular architecture represents a major feature addition that significantly expands the tool's capabilities beyond ID3v2-only analysis. This major version bump reflects the substantial new functionality including support for MP4, MOV, M4A, M4V, 3GP and other container formats, making version 2.0.0 appropriate per semantic versioning conventions for backward-compatible major feature additions.

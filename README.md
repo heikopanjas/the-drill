@@ -35,7 +35,9 @@ A versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and IS
 - **Automatic format detection** based on file headers
 - **Modular architecture** with pluggable dissector system
 - **Colored diagnostic output** for enhanced readability
-- **Granular output control** with `--header`, `--frames`, and `--all` options
+- **Granular output control** with `--header`, `--data`, `--verbose`, `--dump`, and `--all` options
+- **Hexdump display** for low-level binary inspection
+- **Technical box filtering** to focus on metadata (hides mdat, free, sample tables by default)
 - **Comprehensive error reporting** with detailed validation
 
 ## Installation
@@ -83,13 +85,24 @@ supertool debug movie.mp4
 supertool debug --header podcast.mp3
 supertool debug --header video.mp4
 
-# Show only frames/boxes content
-supertool debug --frames audiobook.mp3
-supertool debug --frames movie.m4a
+# Show only data structures (frames/boxes content)
+supertool debug --data audiobook.mp3
+supertool debug --data movie.m4a
 
 # Show everything (default)
 supertool debug --all music.mp3
 supertool debug --all audio.m4a
+
+# Show verbose output (includes technical boxes like mdat, free, sample tables)
+supertool debug --verbose podcast.m4a
+
+# Display hexdump of frame/box data
+supertool debug --dump song.mp3
+supertool debug --dump audio.m4a
+
+# Combine options
+supertool debug --data --dump podcast.m4a
+supertool debug --all --verbose --dump video.mp4
 ```
 
 ### Command Reference
@@ -101,11 +114,13 @@ Arguments:
   <FILE>  Path to the media file to analyze (MP3, MP4, M4A, MOV, M4V, 3GP, etc.)
 
 Options:
-  --header  Show only header information (ID3v2 header or ISOBMFF ftyp box)
-  --frames  Show only content information (ID3v2 frames or ISOBMFF boxes)
-  --all     Show both header and content (default if no options specified)
-  -h, --help    Print help
-  -V, --version Print version
+  --header          Show only header information (ID3v2 header or ISOBMFF ftyp box)
+  --data            Show only data structures (ID3v2 frames or ISOBMFF boxes)
+  --all             Show both header and content (default if no options specified)
+  -v, --verbose     Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco)
+  -d, --dump        Display hexdump of frame/box data for low-level analysis
+  -h, --help        Print help
+  -V, --version     Print version
 ```
 
 ## Sample Output
@@ -221,6 +236,28 @@ File Type Box (ftyp) Details:
   Compatible Brands: M4A , mp42, isom
 ```
 
+### Hexdump Output
+
+```bash
+# Display hexdump of frame/box data
+supertool debug --dump --data song.mp3
+```
+
+```text
+Analyzing file: song.mp3
+Detected format: ID3v2.3 (ID3v2.3 Dissector)
+
+ID3v2.3 Frames:
+    Frame offset 0x0000000A, ID: [0x54, 0x49, 0x54, 0x32] = "TIT2", Size: [0x00, 0x00, 0x00, 0x1A] = 26, Flags: 0x0000
+    TIT2 (Title/songname/content description) - Size: 26 bytes
+        Encoding: UTF-8
+        Value: "Amazing Song Title"
+
+Hexdump:
+00000000  01 41 6D 61 7A 69 6E 67  20 53 6F 6E 67 20 54 69  .Amazing Song Ti
+00000010  74 6C 65 00                                       tle.
+```
+
 ## Supported Formats
 
 ### ID3v2 Tags
@@ -257,6 +294,8 @@ File Type Box (ftyp) Details:
 - **Format Detection** - Automatic dissector selection based on file headers
 - **Memory Efficient** - Streaming analysis without loading entire files
 - **Error Resilient** - Graceful handling of corrupted or non-standard files
+- **Hierarchical Module Structure** - Separate `id3v2/` and `isobmff/` module trees with frame/box type modules
+- **"One Struct Per File"** - Clean separation of concerns following Rust best practices
 
 ### Frame Types Supported
 
@@ -321,10 +360,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Apple for iTunes metadata format documentation
 - Rust community for excellent tooling and libraries
 - Podcast creators whose files helped test large tag handling
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ---
 
