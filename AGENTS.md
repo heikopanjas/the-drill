@@ -1,9 +1,9 @@
 # Agent Instructions for Supertool
 
-**Last updated:** October 18, 2025
+**Last updated:** November 5, 2025
 
 ## Project Overview
-This is a Rust project called "supertool" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files). The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
+This is a Rust project called "supertool" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
 
 ## Development Guidelines
 
@@ -37,6 +37,7 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
   - `src/id3v2_chapter_frame.rs` - Chapter Frame (CHAP) from ID3v2 Chapter Frame Addendum
   - `src/id3v2_table_of_contents_frame.rs` - Table of Contents Frame (CTOC) from ID3v2 Chapter Frame Addendum
   - `src/id3v2_tools.rs` - Utility functions for ID3v2 processing (synchsafe integers, unsynchronization, frame flags)
+  - `src/isobmff_dissector.rs` - ISO Base Media File Format (MP4, MOV, M4A, etc.) box dissection
 
 - Use Cargo for dependency management and builds
 - Follow "one struct/trait per file" organization principle
@@ -48,10 +49,11 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
 
 ### Technical Implementation
 
-- **Common Dissector Trait**: All dissectors implement the `MediaDissector` trait providing unified interface with `dissect()`, `can_handle()`, and metadata methods
+- **Common Dissector Trait**: All dissectors implement the `MediaDissector` trait providing unified interface with `dissect_with_options()`, `can_handle()`, and metadata methods
 - **Dissector Builder Pattern**: `DissectorBuilder` analyzes file headers and returns the appropriate dissector automatically
 - **ID3v2 Support**: Specification-compliant parsing for ID3v2.3 and ID3v2.4 with proper unsynchronization handling, frame flag interpretation, and UTF-16 text support
-- **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns)
+- **ISOBMFF Support**: Hierarchical box parsing for ISO Base Media File Format containers (MP4, MOV, M4A, M4V, 3GP, etc.) with recursive container support
+- **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns, ISOBMFF ftyp boxes)
 - **CLI Interface**: Subcommand-based interface with `debug` command for file analysis
 - **Cross-Platform**: Windows, macOS, and Linux compatibility with proper terminal color support
 
@@ -213,3 +215,8 @@ This is a Rust project called "supertool" - a diagnostic tool focused on dissect
 
 - **Removed ISO BMFF support**: Deleted the ISO BMFF dissector module, pruned builder wiring, and updated CLI messaging to focus solely on ID3v2 analysis.
 - **Reasoning**: Narrowing scope to ID3v2 keeps the codebase lean, reduces maintenance of partially implemented MP4 features, and aligns the tool with its primary diagnostic use cases.
+
+### 2025-11-05
+
+- **ISOBMFF dissector implementation**: Added comprehensive ISO Base Media File Format (ISOBMFF) dissector supporting MP4, MOV, M4A, M4V, 3GP, and other container formats
+- **Reasoning**: Implemented full ISOBMFF box parsing with hierarchical structure analysis. Created `src/isobmff_dissector.rs` module following the existing `MediaDissector` trait pattern. The dissector includes: recursive box parsing with depth limiting, support for both 32-bit and 64-bit box sizes, automatic container box detection for 17 container types (moov, trak, mdia, minf, stbl, etc.), comprehensive box type descriptions covering 80+ standard box types from ISO/IEC 14496-12, color-coded hierarchical output (containers in cyan, special boxes like ftyp/mdat in yellow), ftyp box detail parsing showing major brand, minor version, and compatible brands, intelligent handling of large mdat boxes (skips reading multi-MB media data), and integration with DissectorBuilder for automatic format detection based on ftyp box presence and brand validation. The implementation supports the debug command's --header and --frames options for granular output control. This expands the tool's capabilities beyond ID3v2 to analyze modern media container formats while maintaining the same architectural patterns and user experience.

@@ -20,6 +20,7 @@ mod id3v2_unique_file_id_frame;
 mod id3v2_url_frame;
 mod id3v2_user_text_frame;
 mod id3v2_user_url_frame;
+mod isobmff_dissector;
 mod media_dissector;
 mod unknown_dissector;
 

@@ -26,7 +26,11 @@ impl DissectorBuilder
         file.seek(SeekFrom::Start(0))?; // Reset position
 
         // Try each dissector type in order of preference
-        let dissectors: Vec<Box<dyn MediaDissector>> = vec![Box::new(crate::id3v2_3_dissector::Id3v23Dissector), Box::new(crate::id3v2_4_dissector::Id3v24Dissector)];
+        let dissectors: Vec<Box<dyn MediaDissector>> = vec![
+            Box::new(crate::id3v2_3_dissector::Id3v23Dissector),
+            Box::new(crate::id3v2_4_dissector::Id3v24Dissector),
+            Box::new(crate::isobmff_dissector::IsobmffDissector),
+        ];
 
         for dissector in dissectors
         {
