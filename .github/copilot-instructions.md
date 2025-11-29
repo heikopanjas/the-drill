@@ -1,3 +1,5 @@
-# Copilot Operating Contract
+# GitHub Copilot Instructions for supertool
 
-Please read and follow the instructions in `AGENTS.md` as your primary reference.
+**For complete project instructions, please refer to [`AGENTS.md`](../AGENTS.md) in the project root.**
+
+This file serves as a reference point for GitHub Copilot. All comprehensive development guidelines, architecture patterns, and coding standards are maintained in the primary `AGENTS.md` file.
