@@ -81,6 +81,7 @@ Follow these rules to prevent terminal crashes and ensure clean git history usin
 - **One concern per commit**: Each commit should address one specific change
 - **Test before committing**: Ensure code builds and works
 - **Reference issues**: Use `#123` format in footer if applicable
+- **Version bump commits**: Always include both `Cargo.toml` and `Cargo.lock` when committing version changes
 
 **Examples:**
 
