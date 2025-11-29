@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "supertool")]
+#[command(name = "the-drill")]
 #[command(about = "A versatile media file analysis tool")]
 #[command(version)]
 pub struct Cli

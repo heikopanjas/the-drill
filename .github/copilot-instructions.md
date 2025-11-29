@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for supertool
+# GitHub Copilot Instructions for The Drill
 
 **For complete project instructions, please refer to [`AGENTS.md`](../AGENTS.md) in the project root.**
 

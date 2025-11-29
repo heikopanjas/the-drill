@@ -16,13 +16,13 @@ jobs:
                 include:
                     - os: ubuntu-latest
                       target: x86_64-unknown-linux-gnu
-                      name: supertool-${{ github.ref_name }}-linux
+                      name: the-drill-${{ github.ref_name }}-linux
                     - os: windows-latest
                       target: x86_64-pc-windows-msvc
-                      name: supertool-${{ github.ref_name }}-windows.exe
+                      name: the-drill-${{ github.ref_name }}-windows.exe
                     - os: macos-latest
                       target: universal-apple-darwin
-                      name: supertool-${{ github.ref_name }}-macos
+                      name: the-drill-${{ github.ref_name }}-macos
         runs-on: ${{ matrix.os }}
         steps:
             - name: Checkout code
@@ -53,21 +53,21 @@ jobs:
               run: |
                   cargo build --release --target x86_64-apple-darwin
                   cargo build --release --target aarch64-apple-darwin
-                  lipo -create -output supertool-universal \
-                      target/x86_64-apple-darwin/release/supertool \
-                      target/aarch64-apple-darwin/release/supertool
+                  lipo -create -output the-drill-universal \
+                      target/x86_64-apple-darwin/release/the-drill \
+                      target/aarch64-apple-darwin/release/the-drill
 
             - name: Prepare binary (Linux)
               if: matrix.os == 'ubuntu-latest'
-              run: cp target/${{ matrix.target }}/release/supertool ${{ matrix.name }}
+              run: cp target/${{ matrix.target }}/release/the-drill ${{ matrix.name }}
 
             - name: Prepare binary (Windows)
               if: matrix.os == 'windows-latest'
-              run: cp target/${{ matrix.target }}/release/supertool.exe ${{ matrix.name }}
+              run: cp target/${{ matrix.target }}/release/the-drill.exe ${{ matrix.name }}
 
             - name: Prepare binary (macOS Universal)
               if: matrix.target == 'universal-apple-darwin'
-              run: cp supertool-universal ${{ matrix.name }}
+              run: cp the-drill-universal ${{ matrix.name }}
 
             - name: Upload binary artifact
               uses: actions/upload-artifact@v4
@@ -94,9 +94,9 @@ jobs:
               uses: softprops/action-gh-release@v1
               with:
                   files: |
-                      artifacts/supertool-${{ github.ref_name }}-linux/supertool-${{ github.ref_name }}-linux
-                      artifacts/supertool-${{ github.ref_name }}-windows.exe/supertool-${{ github.ref_name }}-windows.exe
-                      artifacts/supertool-${{ github.ref_name }}-macos/supertool-${{ github.ref_name }}-macos
+                      artifacts/the-drill-${{ github.ref_name }}-linux/the-drill-${{ github.ref_name }}-linux
+                      artifacts/the-drill-${{ github.ref_name }}-windows.exe/the-drill-${{ github.ref_name }}-windows.exe
+                      artifacts/the-drill-${{ github.ref_name }}-macos/the-drill-${{ github.ref_name }}-macos
                   generate_release_notes: true
                   draft: false
                   prerelease: ${{ contains(github.ref_name, '-') }}

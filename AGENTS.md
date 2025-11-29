@@ -1,9 +1,9 @@
-# Agent Instructions for Supertool
+# Agent Instructions for The Drill
 
-**Last updated:** November 5, 2025
+**Last updated:** November 29, 2025
 
 ## Project Overview
-This is a Rust project called "supertool" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
+This is a Rust project called "the-drill" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
 
 ## Development Guidelines
 
@@ -361,3 +361,8 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **Reasoning**: Reorganized the Project Structure section to accurately document the current codebase after extensive refactoring. The documentation now shows the proper hierarchical module structure with ID3v2 modules under `src/id3v2/` (including `frame.rs`, `text_encoding.rs`, `tools.rs`, `dissectors/v3.rs`, `dissectors/v4.rs`, and nine frame type modules under `frames/`) and ISOBMFF modules under `src/isobmff/` (including `box.rs`, `content.rs`, `dissector.rs`, `itunes_metadata.rs`, and 11 box type modules under `boxes/`). This replaces the previous flat file listing that referenced non-existent files like `id3v2_frame.rs`, `id3v2_tools.rs`, etc. The updated documentation provides accurate guidance for navigating the modular architecture and makes it clear how the "one struct/trait per file" principle has been applied throughout both the ID3v2 and ISOBMFF subsystems.
 - **Version bump to 2.0.0**: Updated project version from 1.0.5 to 2.0.0
 - **Reasoning**: The addition of comprehensive ISOBMFF support with full box parsing, iTunes metadata extraction, and modular architecture represents a major feature addition that significantly expands the tool's capabilities beyond ID3v2-only analysis. This major version bump reflects the substantial new functionality including support for MP4, MOV, M4A, M4V, 3GP and other container formats, making version 2.0.0 appropriate per semantic versioning conventions for backward-compatible major feature additions.
+
+### 2025-11-29
+
+- **Project rename from supertool to the-drill**: Renamed the project across all source code, configuration, documentation, and CI/CD workflow files
+- **Reasoning**: Rebranded the project from "supertool" to "the-drill" to better reflect the diagnostic nature of the tool. Updated package name in Cargo.toml, CLI command name in cli.rs, binary artifact names in release.yml workflow, and all documentation files including README.md, AGENTS.md, CLAUDE.md, and copilot-instructions.md. Historical entries in this changelog are preserved unchanged to maintain accurate project history.

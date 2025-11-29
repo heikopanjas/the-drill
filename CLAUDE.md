@@ -1,4 +1,4 @@
-# Claude Code Instructions for supertool
+# Claude Code Instructions for The Drill
 
 **For complete project instructions, please refer to [`AGENTS.md`](AGENTS.md) in the project root.**
 
