@@ -1,6 +1,6 @@
 # Agent Instructions for The Drill
 
-**Last updated:** November 29, 2025
+**Last updated:** November 29, 2025 (session update)
 
 ## Project Overview
 This is a Rust project called "the-drill" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
@@ -193,6 +193,16 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 6. Use conventional commits format for commit messages when requested
 7. Update this file when significant architectural decisions are made
 
+### Git Commit Signing
+
+**CRITICAL:** Always use `required_permissions: ["all"]` when running git commit commands!
+
+The repository uses SSH commit signing. Running git commands in the sandbox blocks access to the SSH agent, resulting in unsigned commits that won't show as "Verified" on GitHub.
+
+- ✅ **Correct:** `required_permissions: ["all"]` - commits will be properly signed
+- ❌ **Wrong:** Using `--no-gpg-sign` to bypass signing errors
+- ❌ **Wrong:** Running in sandbox or with only `["git_write"]` permission
+
 ### Important Notes
 
 - Use terminology "dissect" rather than "parse" for media analysis operations
@@ -369,3 +379,5 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **Reasoning**: Rebranded the project from "supertool" to "the-drill" to better reflect the diagnostic nature of the tool. Updated package name in Cargo.toml, CLI command name in cli.rs, binary artifact names in release.yml workflow, and all documentation files including README.md, AGENTS.md, CLAUDE.md, and copilot-instructions.md. Historical entries in this changelog are preserved unchanged to maintain accurate project history.
 - **Explicit boolean comparison coding style**: Added coding convention requiring explicit boolean comparisons throughout the codebase
 - **Reasoning**: Adopted explicit boolean comparison style for improved code readability. All boolean conditions now use `if condition == true` and `if condition == false` instead of implicit `if condition` and `if !condition`. Added `bool_comparison = "allow"` lint exception to Cargo.toml to permit this style. Updated all source files to follow this convention.
+- **Git commit signing requirement**: Added critical requirement to always use full permissions for git commits
+- **Reasoning**: The repository uses SSH commit signing. Running git commands in sandbox mode blocks access to the SSH agent, causing commits to be unsigned. Using `--no-gpg-sign` as a workaround results in unverified commits on GitHub. The solution is to always use `required_permissions: ["all"]` for git commit operations to ensure proper SSH agent access and commit signing.
