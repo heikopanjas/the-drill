@@ -33,7 +33,7 @@ pub enum Commands
         #[arg(long)]
         all: bool,
 
-        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco)
+        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco, ctts)
         #[arg(long, short)]
         verbose: bool,
 
