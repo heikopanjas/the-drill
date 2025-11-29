@@ -90,7 +90,7 @@ pub fn dissect_id3v2_3_file_with_options(file: &mut File, options: &DebugOptions
     {
         if major == 3
         {
-            if options.show_header
+            if options.show_header == true
             {
                 println!("\nID3v2 Header Found:");
                 println!("  Version: 2.{}.{}", major, minor);
@@ -141,7 +141,7 @@ pub fn dissect_id3v2_3_file_with_options(file: &mut File, options: &DebugOptions
                 dissect_id3v2_3_with_options(file, size, flags, options)?;
             }
         }
-        else if options.show_header
+        else if options.show_header == true
         {
             println!("  Expected ID3v2.3, found version 2.{}", major);
         }
@@ -308,7 +308,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
             | Some(frame) =>
             {
                 // Display frame content differently based on dump flag
-                if options.show_dump
+                if options.show_dump == true
                 {
                     // For frames with embedded content, handle display manually
                     if let Some(content) = &frame.content
@@ -323,7 +323,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 let end_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.end_time);
                                 let duration_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.duration());
                                 println!("    Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted);
-                                if chapter_frame.has_byte_offsets()
+                                if chapter_frame.has_byte_offsets() == true
                                 {
                                     println!("    Byte offsets: {} - {}", chapter_frame.start_offset, chapter_frame.end_offset);
                                 }
@@ -353,11 +353,11 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
                             {
                                 // Display TOC info
                                 println!("    Element ID: \"{}\"", toc_frame.element_id);
-                                if toc_frame.top_level
+                                if toc_frame.top_level == true
                                 {
                                     println!("    Flags: Top-level TOC");
                                 }
-                                if toc_frame.ordered
+                                if toc_frame.ordered == true
                                 {
                                     println!("    Flags: Ordered");
                                 }

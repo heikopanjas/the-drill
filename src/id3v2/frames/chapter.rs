@@ -128,7 +128,7 @@ impl fmt::Display for ChapterFrame
         let end_formatted = format_timestamp(self.end_time);
         let duration_formatted = format_timestamp(self.duration());
         writeln!(f, "Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted)?;
-        if self.has_byte_offsets()
+        if self.has_byte_offsets() == true
         {
             writeln!(f, "Byte offsets: {} - {}", self.start_offset, self.end_offset)?;
         }

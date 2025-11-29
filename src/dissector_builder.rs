@@ -31,7 +31,7 @@ impl DissectorBuilder
 
         for dissector in dissectors
         {
-            if dissector.can_handle(&header)
+            if dissector.can_handle(&header) == true
             {
                 return Ok(dissector);
             }

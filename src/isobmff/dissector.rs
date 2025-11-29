@@ -57,7 +57,7 @@ impl IsobmffBox
         let box_info = format!("'{}' ({})", self.box_type, self.get_description());
 
         // Color code based on box type
-        if self.is_container
+        if self.is_container == true
         {
             writeln!(f, "{}Box at offset 0x{:08X}: {} - Size: {} bytes", indent_str, self.offset, box_info.cyan(), self.size)?;
         }
@@ -112,7 +112,7 @@ impl IsobmffBox
         }
 
         // Display children for container boxes
-        if self.is_container && !self.children.is_empty()
+        if self.is_container == true && self.children.is_empty() == false
         {
             for child in &self.children
             {
@@ -257,7 +257,7 @@ impl IsobmffDissector
             let mut isobmff_box = IsobmffBox::new(current_offset, box_type.clone(), box_size, header_size);
 
             // Parse container contents or read data
-            if isobmff_box.is_container
+            if isobmff_box.is_container == true
             {
                 let mut content_start = current_offset + header_size;
                 let content_end = current_offset + box_size;
@@ -364,7 +364,7 @@ impl MediaDissector for IsobmffDissector
         let boxes = Self::parse_boxes(file, 0, file_size, 0).map_err(|e| format!("Failed to parse ISOBMFF boxes: {}", e))?;
 
         // Header information
-        if options.show_header
+        if options.show_header == true
         {
             println!("\n{}", "ISO Base Media File Format Header:".bright_cyan().bold());
 
@@ -379,7 +379,7 @@ impl MediaDissector for IsobmffDissector
         }
 
         // Boxes/structure information
-        if options.show_data
+        if options.show_data == true
         {
             println!("{}\n", "Box Structure:".bright_cyan().bold());
 

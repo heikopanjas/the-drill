@@ -29,6 +29,7 @@ The VSCode terminal CRASHES when attempting to insert large text blocks (>50 lin
 - Ensure cross-platform compatibility (macOS, Windows, Linux)
 - Use `rustfmt` for code formatting
 - Run `clippy` for linting and suggestions
+- Use explicit boolean comparisons: `if condition == true` and `if condition == false` instead of `if condition` and `if !condition`
 
 #### Commit Message Guidelines
 
@@ -366,3 +367,5 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 
 - **Project rename from supertool to the-drill**: Renamed the project across all source code, configuration, documentation, and CI/CD workflow files
 - **Reasoning**: Rebranded the project from "supertool" to "the-drill" to better reflect the diagnostic nature of the tool. Updated package name in Cargo.toml, CLI command name in cli.rs, binary artifact names in release.yml workflow, and all documentation files including README.md, AGENTS.md, CLAUDE.md, and copilot-instructions.md. Historical entries in this changelog are preserved unchanged to maintain accurate project history.
+- **Explicit boolean comparison coding style**: Added coding convention requiring explicit boolean comparisons throughout the codebase
+- **Reasoning**: Adopted explicit boolean comparison style for improved code readability. All boolean conditions now use `if condition == true` and `if condition == false` instead of implicit `if condition` and `if !condition`. Added `bool_comparison = "allow"` lint exception to Cargo.toml to permit this style. Updated all source files to follow this convention.
