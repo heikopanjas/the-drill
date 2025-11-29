@@ -114,7 +114,7 @@ impl fmt::Display for AttachedPictureFrame
         writeln!(f, "Encoding: {}", self.encoding)?;
         writeln!(f, "MIME type: {}", self.mime_type)?;
         writeln!(f, "Picture type: {} ({})", self.picture_type, self.picture_type_description())?;
-        if !self.description.is_empty()
+        if self.description.is_empty() == false
         {
             writeln!(f, "Description: \"{}\"", self.description)?;
         }

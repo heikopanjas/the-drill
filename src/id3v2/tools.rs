@@ -297,7 +297,7 @@ pub fn parse_embedded_frames(frame_data: &[u8], version_major: u8) -> Vec<crate:
         }
 
         // Validate frame ID for the given version
-        if !is_valid_frame_for_version(&frame_id, version_major)
+        if is_valid_frame_for_version(&frame_id, version_major) == false
         {
             break;
         }

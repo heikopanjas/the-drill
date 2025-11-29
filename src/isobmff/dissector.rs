@@ -46,7 +46,7 @@ impl IsobmffBox
     fn fmt_with_indent_and_options(&self, f: &mut fmt::Formatter<'_>, indent: usize, verbose: bool, show_dump: bool) -> fmt::Result
     {
         // Skip certain technical boxes unless verbose mode is enabled
-        if !verbose && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64")
+        if verbose == false && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64")
         {
             return Ok(());
         }

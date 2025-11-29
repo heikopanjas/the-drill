@@ -58,7 +58,7 @@ impl DebugOptions
     pub fn from_flags(header: bool, data: bool, all: bool, verbose: bool, dump: bool) -> Self
     {
         // If no flags specified, default to showing everything
-        if !header && !data && !all
+        if header == false && data == false && all == false
         {
             return DebugOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
         }

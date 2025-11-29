@@ -81,7 +81,7 @@ impl fmt::Display for UrlEntryBox
     {
         writeln!(f, "Version: {}", self.version)?;
         writeln!(f, "Flags: 0x{:06X}", self.flags)?;
-        if !self.location.is_empty()
+        if self.location.is_empty() == false
         {
             writeln!(f, "Location: {}", self.location)?;
         }
@@ -139,11 +139,11 @@ impl fmt::Display for UrnEntryBox
     {
         writeln!(f, "Version: {}", self.version)?;
         writeln!(f, "Flags: 0x{:06X}", self.flags)?;
-        if !self.name.is_empty()
+        if self.name.is_empty() == false
         {
             writeln!(f, "Name: {}", self.name)?;
         }
-        if !self.location.is_empty()
+        if self.location.is_empty() == false
         {
             writeln!(f, "Location: {}", self.location)?;
         }

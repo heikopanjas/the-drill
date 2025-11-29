@@ -43,7 +43,7 @@ impl fmt::Display for CommentFrame
     {
         writeln!(f, "Encoding: {}", self.encoding)?;
         writeln!(f, "Language: \"{}\"", self.language)?;
-        if !self.description.is_empty()
+        if self.description.is_empty() == false
         {
             writeln!(f, "Description: \"{}\"", self.description)?;
         }

@@ -28,7 +28,7 @@ pub fn parse_id3v2_3_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame>
     }
 
     // Check if this is a valid ID3v2.3 frame ID
-    if !crate::id3v2::tools::is_valid_frame_for_version(&frame_id, 3)
+    if crate::id3v2::tools::is_valid_frame_for_version(&frame_id, 3) == false
     {
         return None;
     }
@@ -113,7 +113,7 @@ pub fn dissect_id3v2_3_file_with_options(file: &mut File, options: &DebugOptions
                     {
                         flag_parts.push("experimental");
                     }
-                    if !flag_parts.is_empty()
+                    if flag_parts.is_empty() == false
                     {
                         println!("Active: {}", flag_parts.join(", "));
                     }
@@ -156,7 +156,7 @@ pub fn dissect_id3v2_3_file_with_options(file: &mut File, options: &DebugOptions
 
 pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
 {
-    if !options.show_data
+    if options.show_data == false
     {
         // If not showing data, skip the tag data entirely
         let mut buffer = vec![0u8; tag_size as usize];
@@ -252,7 +252,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
         let frame_flags = u16::from_be_bytes([buffer[pos + 8], buffer[pos + 9]]);
 
         // Check if this is a valid ID3v2.3 frame ID
-        if !is_valid_frame_for_version(frame_id, 3)
+        if is_valid_frame_for_version(frame_id, 3) == false
         {
             // Create a temporary frame for header display even though it's invalid
             let temp_frame = crate::id3v2::frame::Id3v2Frame::new_with_offset(frame_id.to_string(), frame_size, frame_flags, pos, Vec::new());
@@ -337,7 +337,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 }
                                 println!();
 
-                                if !chapter_frame.sub_frames.is_empty()
+                                if chapter_frame.sub_frames.is_empty() == false
                                 {
                                     println!("    Sub-frames: {} embedded frame(s)", chapter_frame.sub_frames.len());
                                     println!();
@@ -362,7 +362,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                     println!("    Flags: Ordered");
                                 }
 
-                                if !toc_frame.child_element_ids.is_empty()
+                                if toc_frame.child_element_ids.is_empty() == false
                                 {
                                     print!("    Child elements ({}): ", toc_frame.child_element_ids.len());
                                     for (i, child_id) in toc_frame.child_element_ids.iter().enumerate()
@@ -385,7 +385,7 @@ pub fn dissect_id3v2_3_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 }
                                 println!();
 
-                                if !toc_frame.sub_frames.is_empty()
+                                if toc_frame.sub_frames.is_empty() == false
                                 {
                                     println!("    Sub-frames: {} embedded frame(s)", toc_frame.sub_frames.len());
                                     println!();

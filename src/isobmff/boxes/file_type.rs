@@ -41,7 +41,7 @@ impl fmt::Display for FileTypeBox
     {
         writeln!(f, "Major Brand: '{}'", self.major_brand)?;
         writeln!(f, "Minor Version: {}", self.minor_version)?;
-        if !self.compatible_brands.is_empty()
+        if self.compatible_brands.is_empty() == false
         {
             write!(f, "Compatible Brands: ")?;
             let brands: Vec<String> = self.compatible_brands.iter().map(|b| format!("'{}'", b)).collect();

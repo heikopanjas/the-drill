@@ -54,7 +54,7 @@ impl fmt::Display for SampleDescriptionBox
     {
         writeln!(f, "Version: {}", self.version)?;
         writeln!(f, "Entry Count: {}", self.entry_count)?;
-        if !self.entries.is_empty()
+        if self.entries.is_empty() == false
         {
             write!(f, "Sample Entries: ")?;
             let entry_list: Vec<String> = self.entries.iter().map(|e| format!("'{}'", e)).collect();
