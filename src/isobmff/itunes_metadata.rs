@@ -162,21 +162,18 @@ impl ItunesMetadata
             | ItunesDataType::UnsignedInt =>
             {
                 // Special handling for track and disk numbers
-                if box_type == "trkn" || box_type == "disk"
+                if (box_type == "trkn" || box_type == "disk") && payload.len() >= 6
                 {
-                    if payload.len() >= 6
-                    {
-                        let number = u16::from_be_bytes([payload[2], payload[3]]);
-                        let total = u16::from_be_bytes([payload[4], payload[5]]);
+                    let number = u16::from_be_bytes([payload[2], payload[3]]);
+                    let total = u16::from_be_bytes([payload[4], payload[5]]);
 
-                        if box_type == "trkn"
-                        {
-                            return Ok(ItunesMetadata { data_type, content: ItunesContent::TrackNumber { track: number, total_tracks: total } });
-                        }
-                        else
-                        {
-                            return Ok(ItunesMetadata { data_type, content: ItunesContent::DiskNumber { disk: number, total_disks: total } });
-                        }
+                    if box_type == "trkn"
+                    {
+                        return Ok(ItunesMetadata { data_type, content: ItunesContent::TrackNumber { track: number, total_tracks: total } });
+                    }
+                    else
+                    {
+                        return Ok(ItunesMetadata { data_type, content: ItunesContent::DiskNumber { disk: number, total_disks: total } });
                     }
                 }
 

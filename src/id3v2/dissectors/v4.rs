@@ -144,20 +144,14 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
                 dissect_id3v2_4_with_options(file, size, flags, options)?;
             }
         }
-        else
+        else if options.show_header
         {
-            if options.show_header
-            {
-                println!("  Expected ID3v2.4, found version 2.{}", major);
-            }
+            println!("  Expected ID3v2.4, found version 2.{}", major);
         }
     }
-    else
+    else if options.show_header
     {
-        if options.show_header
-        {
-            println!("No ID3v2 header found");
-        }
+        println!("No ID3v2 header found");
     }
 
     Ok(())
@@ -230,13 +224,13 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
 
             if frame_start > buffer.len()
             {
-                println!("  {}", format!("ERROR: Extended header size exceeds buffer length").bright_red());
+                println!("  {}", "ERROR: Extended header size exceeds buffer length".bright_red());
                 return Err("Invalid extended header size".into());
             }
         }
         else
         {
-            println!("  {}", format!("ERROR: Buffer too small to read extended header size").bright_red());
+            println!("  {}", "ERROR: Buffer too small to read extended header size".bright_red());
             return Err("Buffer too small for extended header".into());
         }
     }

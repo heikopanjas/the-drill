@@ -228,21 +228,17 @@ impl fmt::Display for Id3v2Frame
                     write!(f, " - Text: \"{}\"", text)?;
                 }
             }
-            else if let Some(url) = self.get_url()
+            else if let Some(url) = self.get_url() &&
+                !url.is_empty()
             {
-                if !url.is_empty()
-                {
-                    write!(f, " - URL: \"{}\"", url)?;
-                }
+                write!(f, " - URL: \"{}\"", url)?;
             }
         }
 
-        if let Some(embedded) = &self.embedded_frames
+        if let Some(embedded) = &self.embedded_frames &&
+            !embedded.is_empty()
         {
-            if !embedded.is_empty()
-            {
-                writeln!(f, "    {} embedded sub-frame(s)", embedded.len())?;
-            }
+            writeln!(f, "    {} embedded sub-frame(s)", embedded.len())?;
         }
 
         writeln!(f)?; // Add newline at the end of frame display

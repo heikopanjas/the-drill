@@ -115,14 +115,7 @@ impl ChapterFrame
     /// Get chapter duration in milliseconds
     pub fn duration(&self) -> u32
     {
-        if self.end_time >= self.start_time
-        {
-            self.end_time - self.start_time
-        }
-        else
-        {
-            0
-        }
+        self.end_time.saturating_sub(self.start_time)
     }
 }
 
@@ -163,7 +156,7 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
 {
     // Use the new unified frame header display function
     let mut buffer = Vec::new();
-    if let Err(_) = crate::id3v2::tools::display_frame_header(&mut buffer, frame, "        ")
+    if crate::id3v2::tools::display_frame_header(&mut buffer, frame, "        ").is_err()
     {
         // Fallback to basic display if header function fails
         writeln!(f, "        Frame: {} - Size: {} bytes", frame.id, frame.size)?;

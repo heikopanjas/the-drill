@@ -280,16 +280,14 @@ impl IsobmffDissector
                 if Self::is_itunes_metadata_box(&box_type)
                 {
                     // Look for 'data' child box
-                    if let Some(data_box) = isobmff_box.children.iter().find(|child| child.box_type == "data")
+                    if let Some(data_box) = isobmff_box.children.iter().find(|child| child.box_type == "data") &&
+                        !data_box.data.is_empty()
                     {
-                        if !data_box.data.is_empty()
+                        match ItunesMetadata::parse(&box_type, &data_box.data)
                         {
-                            match ItunesMetadata::parse(&box_type, &data_box.data)
-                            {
-                                | Ok(metadata) => isobmff_box.itunes_content = Some(metadata),
-                                | Err(_) =>
-                                {} // Ignore parsing errors for now
-                            }
+                            | Ok(metadata) => isobmff_box.itunes_content = Some(metadata),
+                            | Err(_) =>
+                            {} // Ignore parsing errors for now
                         }
                     }
                 }
