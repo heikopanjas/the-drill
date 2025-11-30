@@ -3,7 +3,7 @@ use std::{fs::File, io::Read};
 use owo_colors::OwoColorize;
 
 use crate::{
-    cli::DebugOptions,
+    cli::DissectOptions,
     id3v2::{frame::Id3v2Frame, tools::*},
     media_dissector::MediaDissector
 };
@@ -59,7 +59,7 @@ impl MediaDissector for Id3v24Dissector
         "ID3v2.4"
     }
 
-    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    fn dissect_with_options(&self, file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
     {
         dissect_id3v2_4_file_with_options(file, options)
     }
@@ -82,7 +82,7 @@ impl MediaDissector for Id3v24Dissector
 }
 
 /// Dissect an ID3v2.4 file from the beginning with specific options
-pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
 {
     // Read and parse ID3v2 header
     if let Some((major, minor, flags, size)) = read_id3v2_header(file)?
@@ -157,7 +157,7 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
     Ok(())
 }
 
-pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
 {
     if options.show_data == false
     {

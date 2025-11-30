@@ -175,7 +175,7 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **ID3v2 Support**: Specification-compliant parsing for ID3v2.3 and ID3v2.4 with proper unsynchronization handling, frame flag interpretation, and UTF-16 text support
 - **ISOBMFF Support**: Hierarchical box parsing for ISO Base Media File Format containers (MP4, MOV, M4A, M4V, 3GP, etc.) with recursive container support
 - **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns, ISOBMFF ftyp boxes)
-- **CLI Interface**: Subcommand-based interface with `debug` command for file analysis
+- **CLI Interface**: Subcommand-based interface with `dissect` command for file analysis
 - **Cross-Platform**: Windows, macOS, and Linux compatibility with proper terminal color support
 
 ### Documentation
@@ -187,7 +187,7 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 ## Development Workflow
 
 1. Make changes following the guidelines above
-2. Test changes with `cargo run -- debug <file>` to test file dissection (use `--header`, `--data`, `--verbose`, `--dump`, or `--all` options as needed)
+2. Test changes with `cargo run -- dissect <file>` to test file dissection (use `--header`, `--data`, `--verbose`, `--dump`, or `--all` options as needed)
 3. Run `cargo build` to ensure compilation
 4. Use `cargo run -- --help` to verify CLI interface
 5. **NEVER commit automatically** - only commit when explicitly requested by the user

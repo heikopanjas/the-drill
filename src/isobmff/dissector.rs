@@ -7,7 +7,7 @@ use std::{
 use owo_colors::OwoColorize;
 
 use crate::{
-    cli::DebugOptions,
+    cli::DissectOptions,
     isobmff::{r#box::IsobmffBox, content::*, itunes_metadata::ItunesMetadata},
     media_dissector::MediaDissector
 };
@@ -356,7 +356,7 @@ impl MediaDissector for IsobmffDissector
         "ISO Base Media File Format Dissector"
     }
 
-    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    fn dissect_with_options(&self, file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
     {
         let file_size = file.metadata()?.len();
 

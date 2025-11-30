@@ -69,46 +69,46 @@ cargo build
 
 ```bash
 # Analyze an MP3 file with full output
-the-drill debug song.mp3
+the-drill dissect song.mp3
 
 # Analyze an M4A/MP4 file
-the-drill debug podcast.m4a
+the-drill dissect podcast.m4a
 
 # Analyze a video file
-the-drill debug movie.mp4
+the-drill dissect movie.mp4
 ```
 
 ### Granular Output Control
 
 ```bash
 # Show only header information (ID3v2 header or ISOBMFF ftyp)
-the-drill debug --header podcast.mp3
-the-drill debug --header video.mp4
+the-drill dissect --header podcast.mp3
+the-drill dissect --header video.mp4
 
 # Show only data structures (frames/boxes content)
-the-drill debug --data audiobook.mp3
-the-drill debug --data movie.m4a
+the-drill dissect --data audiobook.mp3
+the-drill dissect --data movie.m4a
 
 # Show everything (default)
-the-drill debug --all music.mp3
-the-drill debug --all audio.m4a
+the-drill dissect --all music.mp3
+the-drill dissect --all audio.m4a
 
 # Show verbose output (includes technical boxes like mdat, free, sample tables)
-the-drill debug --verbose podcast.m4a
+the-drill dissect --verbose podcast.m4a
 
 # Display hexdump of frame/box data
-the-drill debug --dump song.mp3
-the-drill debug --dump audio.m4a
+the-drill dissect --dump song.mp3
+the-drill dissect --dump audio.m4a
 
 # Combine options
-the-drill debug --data --dump podcast.m4a
-the-drill debug --all --verbose --dump video.mp4
+the-drill dissect --data --dump podcast.m4a
+the-drill dissect --all --verbose --dump video.mp4
 ```
 
 ### Command Reference
 
 ```text
-the-drill debug [OPTIONS] <FILE>
+the-drill dissect [OPTIONS] <FILE>
 
 Arguments:
   <FILE>  Path to the media file to analyze (MP3, MP4, M4A, MOV, M4V, 3GP, etc.)
@@ -207,7 +207,7 @@ ISOBMFF Box Structure:
 
 ```bash
 # ID3v2 file
-the-drill debug --header podcast.mp3
+the-drill dissect --header podcast.mp3
 ```
 
 ```text
@@ -223,7 +223,7 @@ ID3v2 Header Found:
 
 ```bash
 # ISOBMFF file
-the-drill debug --header podcast.m4a
+the-drill dissect --header podcast.m4a
 ```
 
 ```text
@@ -240,7 +240,7 @@ File Type Box (ftyp) Details:
 
 ```bash
 # Display hexdump of frame/box data
-the-drill debug --dump --data song.mp3
+the-drill dissect --dump --data song.mp3
 ```
 
 ```text
