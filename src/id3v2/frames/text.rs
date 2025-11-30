@@ -57,7 +57,7 @@ impl fmt::Display for TextFrame
                 writeln!(f, "  [{}] \"{}\"", i + 1, string)?;
             }
         }
-        else if !self.text.is_empty()
+        else if self.text.is_empty() == false
         {
             writeln!(f, "Value: \"{}\"", self.text)?;
         }

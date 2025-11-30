@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "supertool")]
+#[command(name = "the-drill")]
 #[command(about = "A versatile media file analysis tool")]
 #[command(version)]
 pub struct Cli
@@ -15,8 +15,8 @@ pub struct Cli
 #[derive(Subcommand)]
 pub enum Commands
 {
-    /// Debug and analyze media files
-    Debug
+    /// Dissect and analyze media files
+    Dissect
     {
         /// Path to the media file to analyze
         file: PathBuf,
@@ -33,7 +33,7 @@ pub enum Commands
         #[arg(long)]
         all: bool,
 
-        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco)
+        /// Show verbose output including large technical boxes (mdat, free, stts, stsc, stsz, stco, ctts)
         #[arg(long, short)]
         verbose: bool,
 
@@ -43,9 +43,9 @@ pub enum Commands
     }
 }
 
-/// Options for controlling debug output
+/// Options for controlling dissect output
 #[derive(Debug, Clone)]
-pub struct DebugOptions
+pub struct DissectOptions
 {
     pub show_header:  bool,
     pub show_data:    bool,
@@ -53,23 +53,23 @@ pub struct DebugOptions
     pub show_dump:    bool
 }
 
-impl DebugOptions
+impl DissectOptions
 {
     pub fn from_flags(header: bool, data: bool, all: bool, verbose: bool, dump: bool) -> Self
     {
         // If no flags specified, default to showing everything
-        if !header && !data && !all
+        if header == false && data == false && all == false
         {
-            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
+            return DissectOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
         }
 
         // If --all is specified, show everything regardless of other flags
         if all
         {
-            return DebugOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
+            return DissectOptions { show_header: true, show_data: true, show_verbose: verbose, show_dump: dump };
         }
 
         // Otherwise, use the specific flags
-        DebugOptions { show_header: header, show_data: data, show_verbose: verbose, show_dump: dump }
+        DissectOptions { show_header: header, show_data: data, show_verbose: verbose, show_dump: dump }
     }
 }

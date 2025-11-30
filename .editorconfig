@@ -1,0 +1,41 @@
+# EditorConfig for Rust projects
+# https://editorconfig.org
+
+root = true
+
+# All files - baseline settings
+[*]
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Rust source files
+[*.rs]
+charset = utf-8
+
+# Cargo manifest and config files
+[Cargo.toml]
+charset = utf-8
+
+[Cargo.lock]
+charset = utf-8
+
+[.cargo/config.toml]
+charset = utf-8
+
+# Markdown documentation
+[*.md]
+charset = utf-8
+trim_trailing_whitespace = false
+
+# YAML configuration files
+[*.{yml,yaml}]
+charset = utf-8
+
+# JSON configuration files
+[*.json]
+charset = utf-8
+
+# TOML configuration files
+[*.toml]
+charset = utf-8

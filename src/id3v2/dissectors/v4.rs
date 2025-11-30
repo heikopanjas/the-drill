@@ -3,7 +3,7 @@ use std::{fs::File, io::Read};
 use owo_colors::OwoColorize;
 
 use crate::{
-    cli::DebugOptions,
+    cli::DissectOptions,
     id3v2::{frame::Id3v2Frame, tools::*},
     media_dissector::MediaDissector
 };
@@ -28,7 +28,7 @@ pub fn parse_id3v2_4_frame(buffer: &[u8], pos: usize) -> Option<Id3v2Frame>
     }
 
     // Check if this is a valid ID3v2.4 frame ID
-    if !crate::id3v2::tools::is_valid_frame_for_version(&frame_id, 4)
+    if crate::id3v2::tools::is_valid_frame_for_version(&frame_id, 4) == false
     {
         return None;
     }
@@ -59,7 +59,7 @@ impl MediaDissector for Id3v24Dissector
         "ID3v2.4"
     }
 
-    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    fn dissect_with_options(&self, file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
     {
         dissect_id3v2_4_file_with_options(file, options)
     }
@@ -82,14 +82,14 @@ impl MediaDissector for Id3v24Dissector
 }
 
 /// Dissect an ID3v2.4 file from the beginning with specific options
-pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
 {
     // Read and parse ID3v2 header
     if let Some((major, minor, flags, size)) = read_id3v2_header(file)?
     {
         if major == 4
         {
-            if options.show_header
+            if options.show_header == true
             {
                 println!("\nID3v2 Header Found:");
                 println!("  Version: 2.{}.{}", major, minor);
@@ -116,7 +116,7 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
                     {
                         flag_parts.push("footer_present");
                     }
-                    if !flag_parts.is_empty()
+                    if flag_parts.is_empty() == false
                     {
                         println!("Active: {}", flag_parts.join(", "));
                     }
@@ -144,28 +144,22 @@ pub fn dissect_id3v2_4_file_with_options(file: &mut File, options: &DebugOptions
                 dissect_id3v2_4_with_options(file, size, flags, options)?;
             }
         }
-        else
+        else if options.show_header == true
         {
-            if options.show_header
-            {
-                println!("  Expected ID3v2.4, found version 2.{}", major);
-            }
+            println!("  Expected ID3v2.4, found version 2.{}", major);
         }
     }
-    else
+    else if options.show_header
     {
-        if options.show_header
-        {
-            println!("No ID3v2 header found");
-        }
+        println!("No ID3v2 header found");
     }
 
     Ok(())
 }
 
-pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
 {
-    if !options.show_data
+    if options.show_data == false
     {
         // If not showing data, skip the tag data entirely
         let mut buffer = vec![0u8; tag_size as usize];
@@ -230,13 +224,13 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
 
             if frame_start > buffer.len()
             {
-                println!("  {}", format!("ERROR: Extended header size exceeds buffer length").bright_red());
+                println!("  {}", "ERROR: Extended header size exceeds buffer length".bright_red());
                 return Err("Invalid extended header size".into());
             }
         }
         else
         {
-            println!("  {}", format!("ERROR: Buffer too small to read extended header size").bright_red());
+            println!("  {}", "ERROR: Buffer too small to read extended header size".bright_red());
             return Err("Buffer too small for extended header".into());
         }
     }
@@ -261,7 +255,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
         let frame_flags = u16::from_be_bytes([buffer[pos + 8], buffer[pos + 9]]);
 
         // Check if this is a valid ID3v2.4 frame ID
-        if !is_valid_frame_for_version(frame_id, 4)
+        if is_valid_frame_for_version(frame_id, 4) == false
         {
             // Create a temporary frame for header display even though it's invalid
             let temp_frame = crate::id3v2::frame::Id3v2Frame::new_with_offset(frame_id.to_string(), frame_size, frame_flags, pos, Vec::new());
@@ -319,7 +313,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
             | Some(frame) =>
             {
                 // Display frame content differently based on dump flag
-                if options.show_dump
+                if options.show_dump == true
                 {
                     // For frames with embedded content, handle display manually
                     if let Some(content) = &frame.content
@@ -334,7 +328,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 let end_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.end_time);
                                 let duration_formatted = crate::id3v2::frames::chapter::format_timestamp(chapter_frame.duration());
                                 println!("    Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted);
-                                if chapter_frame.has_byte_offsets()
+                                if chapter_frame.has_byte_offsets() == true
                                 {
                                     println!("    Byte offsets: {} - {}", chapter_frame.start_offset, chapter_frame.end_offset);
                                 }
@@ -348,7 +342,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 }
                                 println!();
 
-                                if !chapter_frame.sub_frames.is_empty()
+                                if chapter_frame.sub_frames.is_empty() == false
                                 {
                                     println!("    Sub-frames: {} embedded frame(s)", chapter_frame.sub_frames.len());
                                     println!();
@@ -364,16 +358,16 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                             {
                                 // Display TOC info
                                 println!("    Element ID: \"{}\"", toc_frame.element_id);
-                                if toc_frame.top_level
+                                if toc_frame.top_level == true
                                 {
                                     println!("    Flags: Top-level TOC");
                                 }
-                                if toc_frame.ordered
+                                if toc_frame.ordered == true
                                 {
                                     println!("    Flags: Ordered");
                                 }
 
-                                if !toc_frame.child_element_ids.is_empty()
+                                if toc_frame.child_element_ids.is_empty() == false
                                 {
                                     print!("    Child elements ({}): ", toc_frame.child_element_ids.len());
                                     for (i, child_id) in toc_frame.child_element_ids.iter().enumerate()
@@ -396,7 +390,7 @@ pub fn dissect_id3v2_4_with_options(file: &mut File, tag_size: u32, flags: u8, o
                                 }
                                 println!();
 
-                                if !toc_frame.sub_frames.is_empty()
+                                if toc_frame.sub_frames.is_empty() == false
                                 {
                                     println!("    Sub-frames: {} embedded frame(s)", toc_frame.sub_frames.len());
                                     println!();

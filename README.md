@@ -1,4 +1,4 @@
-# Supertool
+# The Drill
 
 A versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers (MP4, MOV, M4A, etc.). Built in Rust for cross-platform compatibility with a focus on detailed diagnostic output and specification compliance.
 
@@ -50,12 +50,12 @@ A versatile media file analysis tool that dissects ID3v2 tags (MP3 files) and IS
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/supertool.git
-cd supertool
+git clone https://github.com/yourusername/the-drill.git
+cd the-drill
 cargo build --release
 ```
 
-The binary will be available at `target/release/supertool`.
+The binary will be available at `target/release/the-drill`.
 
 ### Development Build
 
@@ -69,46 +69,46 @@ cargo build
 
 ```bash
 # Analyze an MP3 file with full output
-supertool debug song.mp3
+the-drill dissect song.mp3
 
 # Analyze an M4A/MP4 file
-supertool debug podcast.m4a
+the-drill dissect podcast.m4a
 
 # Analyze a video file
-supertool debug movie.mp4
+the-drill dissect movie.mp4
 ```
 
 ### Granular Output Control
 
 ```bash
 # Show only header information (ID3v2 header or ISOBMFF ftyp)
-supertool debug --header podcast.mp3
-supertool debug --header video.mp4
+the-drill dissect --header podcast.mp3
+the-drill dissect --header video.mp4
 
 # Show only data structures (frames/boxes content)
-supertool debug --data audiobook.mp3
-supertool debug --data movie.m4a
+the-drill dissect --data audiobook.mp3
+the-drill dissect --data movie.m4a
 
 # Show everything (default)
-supertool debug --all music.mp3
-supertool debug --all audio.m4a
+the-drill dissect --all music.mp3
+the-drill dissect --all audio.m4a
 
 # Show verbose output (includes technical boxes like mdat, free, sample tables)
-supertool debug --verbose podcast.m4a
+the-drill dissect --verbose podcast.m4a
 
 # Display hexdump of frame/box data
-supertool debug --dump song.mp3
-supertool debug --dump audio.m4a
+the-drill dissect --dump song.mp3
+the-drill dissect --dump audio.m4a
 
 # Combine options
-supertool debug --data --dump podcast.m4a
-supertool debug --all --verbose --dump video.mp4
+the-drill dissect --data --dump podcast.m4a
+the-drill dissect --all --verbose --dump video.mp4
 ```
 
 ### Command Reference
 
 ```text
-supertool debug [OPTIONS] <FILE>
+the-drill dissect [OPTIONS] <FILE>
 
 Arguments:
   <FILE>  Path to the media file to analyze (MP3, MP4, M4A, MOV, M4V, 3GP, etc.)
@@ -207,7 +207,7 @@ ISOBMFF Box Structure:
 
 ```bash
 # ID3v2 file
-supertool debug --header podcast.mp3
+the-drill dissect --header podcast.mp3
 ```
 
 ```text
@@ -223,7 +223,7 @@ ID3v2 Header Found:
 
 ```bash
 # ISOBMFF file
-supertool debug --header podcast.m4a
+the-drill dissect --header podcast.m4a
 ```
 
 ```text
@@ -240,7 +240,7 @@ File Type Box (ftyp) Details:
 
 ```bash
 # Display hexdump of frame/box data
-supertool debug --dump --data song.mp3
+the-drill dissect --dump --data song.mp3
 ```
 
 ```text

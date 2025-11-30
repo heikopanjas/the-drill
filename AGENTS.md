@@ -1,9 +1,9 @@
-# Agent Instructions for Supertool
+# Agent Instructions for The Drill
 
-**Last updated:** November 5, 2025
+**Last updated:** November 29, 2025 (session update)
 
 ## Project Overview
-This is a Rust project called "supertool" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
+This is a Rust project called "the-drill" - a diagnostic tool focused on dissecting ID3v2 tags (MP3 files) and ISO Base Media File Format (ISOBMFF) containers. The project runs on macOS, Windows, and Linux with a modular architecture and CLI interface.
 
 ## Development Guidelines
 
@@ -29,6 +29,7 @@ The VSCode terminal CRASHES when attempting to insert large text blocks (>50 lin
 - Ensure cross-platform compatibility (macOS, Windows, Linux)
 - Use `rustfmt` for code formatting
 - Run `clippy` for linting and suggestions
+- Use explicit boolean comparisons: `if condition == true` and `if condition == false` instead of `if condition` and `if !condition`
 
 #### Commit Message Guidelines
 
@@ -80,6 +81,7 @@ Follow these rules to prevent terminal crashes and ensure clean git history usin
 - **One concern per commit**: Each commit should address one specific change
 - **Test before committing**: Ensure code builds and works
 - **Reference issues**: Use `#123` format in footer if applicable
+- **Version bump commits**: Always include both `Cargo.toml` and `Cargo.lock` when committing version changes
 
 **Examples:**
 
@@ -173,7 +175,7 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **ID3v2 Support**: Specification-compliant parsing for ID3v2.3 and ID3v2.4 with proper unsynchronization handling, frame flag interpretation, and UTF-16 text support
 - **ISOBMFF Support**: Hierarchical box parsing for ISO Base Media File Format containers (MP4, MOV, M4A, M4V, 3GP, etc.) with recursive container support
 - **File Format Detection**: Automatic detection based on file headers (ID3 tags, MPEG sync patterns, ISOBMFF ftyp boxes)
-- **CLI Interface**: Subcommand-based interface with `debug` command for file analysis
+- **CLI Interface**: Subcommand-based interface with `dissect` command for file analysis
 - **Cross-Platform**: Windows, macOS, and Linux compatibility with proper terminal color support
 
 ### Documentation
@@ -185,12 +187,22 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 ## Development Workflow
 
 1. Make changes following the guidelines above
-2. Test changes with `cargo run -- debug <file>` to test file dissection (use `--header`, `--data`, `--verbose`, `--dump`, or `--all` options as needed)
+2. Test changes with `cargo run -- dissect <file>` to test file dissection (use `--header`, `--data`, `--verbose`, `--dump`, or `--all` options as needed)
 3. Run `cargo build` to ensure compilation
 4. Use `cargo run -- --help` to verify CLI interface
 5. **NEVER commit automatically** - only commit when explicitly requested by the user
 6. Use conventional commits format for commit messages when requested
 7. Update this file when significant architectural decisions are made
+
+### Git Commit Signing
+
+**CRITICAL:** Always use `required_permissions: ["all"]` when running git commit commands!
+
+The repository uses SSH commit signing. Running git commands in the sandbox blocks access to the SSH agent, resulting in unsigned commits that won't show as "Verified" on GitHub.
+
+- ✅ **Correct:** `required_permissions: ["all"]` - commits will be properly signed
+- ❌ **Wrong:** Using `--no-gpg-sign` to bypass signing errors
+- ❌ **Wrong:** Running in sandbox or with only `["git_write"]` permission
 
 ### Important Notes
 
@@ -361,3 +373,14 @@ fix: update `KString` with "nested 'quotes'" & $special chars!
 - **Reasoning**: Reorganized the Project Structure section to accurately document the current codebase after extensive refactoring. The documentation now shows the proper hierarchical module structure with ID3v2 modules under `src/id3v2/` (including `frame.rs`, `text_encoding.rs`, `tools.rs`, `dissectors/v3.rs`, `dissectors/v4.rs`, and nine frame type modules under `frames/`) and ISOBMFF modules under `src/isobmff/` (including `box.rs`, `content.rs`, `dissector.rs`, `itunes_metadata.rs`, and 11 box type modules under `boxes/`). This replaces the previous flat file listing that referenced non-existent files like `id3v2_frame.rs`, `id3v2_tools.rs`, etc. The updated documentation provides accurate guidance for navigating the modular architecture and makes it clear how the "one struct/trait per file" principle has been applied throughout both the ID3v2 and ISOBMFF subsystems.
 - **Version bump to 2.0.0**: Updated project version from 1.0.5 to 2.0.0
 - **Reasoning**: The addition of comprehensive ISOBMFF support with full box parsing, iTunes metadata extraction, and modular architecture represents a major feature addition that significantly expands the tool's capabilities beyond ID3v2-only analysis. This major version bump reflects the substantial new functionality including support for MP4, MOV, M4A, M4V, 3GP and other container formats, making version 2.0.0 appropriate per semantic versioning conventions for backward-compatible major feature additions.
+
+### 2025-11-29
+
+- **Project rename from supertool to the-drill**: Renamed the project across all source code, configuration, documentation, and CI/CD workflow files
+- **Reasoning**: Rebranded the project from "supertool" to "the-drill" to better reflect the diagnostic nature of the tool. Updated package name in Cargo.toml, CLI command name in cli.rs, binary artifact names in release.yml workflow, and all documentation files including README.md, AGENTS.md, CLAUDE.md, and copilot-instructions.md. Historical entries in this changelog are preserved unchanged to maintain accurate project history.
+- **Explicit boolean comparison coding style**: Added coding convention requiring explicit boolean comparisons throughout the codebase
+- **Reasoning**: Adopted explicit boolean comparison style for improved code readability. All boolean conditions now use `if condition == true` and `if condition == false` instead of implicit `if condition` and `if !condition`. Added `bool_comparison = "allow"` lint exception to Cargo.toml to permit this style. Updated all source files to follow this convention.
+- **Git commit signing requirement**: Added critical requirement to always use full permissions for git commits
+- **Reasoning**: The repository uses SSH commit signing. Running git commands in sandbox mode blocks access to the SSH agent, causing commits to be unsigned. Using `--no-gpg-sign` as a workaround results in unverified commits on GitHub. The solution is to always use `required_permissions: ["all"]` for git commit operations to ensure proper SSH agent access and commit signing.
+- **Added ctts to verbose-only box filter**: Added Composition Time-to-Sample box to the list of technical boxes hidden unless --verbose is specified
+- **Reasoning**: The ctts box contains per-sample composition time offsets used for B-frame video decoding. Like other sample table boxes (stts, stsc, stsz, stco, co64), it can contain thousands of entries and is not useful for typical metadata analysis. Adding it to the verbose filter improves output readability for standard diagnostic use cases.

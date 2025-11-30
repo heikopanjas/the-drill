@@ -69,11 +69,11 @@ impl fmt::Display for HandlerBox
     {
         writeln!(f, "Version: {}", self.version)?;
         writeln!(f, "Handler Type: '{}' ({})", self.handler_type, Self::get_handler_name(&self.handler_type))?;
-        if !self.manufacturer.is_empty() && self.manufacturer.chars().any(|c| c.is_alphanumeric())
+        if self.manufacturer.is_empty() == false && self.manufacturer.chars().any(|c| c.is_alphanumeric()) == true
         {
             writeln!(f, "Manufacturer: '{}'", self.manufacturer)?;
         }
-        if !self.name.is_empty()
+        if self.name.is_empty() == false
         {
             writeln!(f, "Name: \"{}\"", self.name)?;
         }

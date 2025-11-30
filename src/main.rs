@@ -2,7 +2,7 @@ use std::{fs::File, path::PathBuf};
 
 use clap::Parser;
 
-use crate::cli::{Cli, Commands, DebugOptions};
+use crate::cli::{Cli, Commands, DissectOptions};
 
 mod cli;
 mod dissector_builder;
@@ -20,9 +20,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
 
     match cli.command
     {
-        | Commands::Debug { file, header, data, all, verbose, dump } =>
+        | Commands::Dissect { file, header, data, all, verbose, dump } =>
         {
-            let options = DebugOptions::from_flags(header, data, all, verbose, dump);
+            let options = DissectOptions::from_flags(header, data, all, verbose, dump);
             dissect_file(&file, &options)?;
         }
     }
@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>
     Ok(())
 }
 
-fn dissect_file(file_path: &PathBuf, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+fn dissect_file(file_path: &PathBuf, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
 {
     // Open file
     let mut file = File::open(file_path)?;

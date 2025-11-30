@@ -92,7 +92,7 @@ pub fn decode_text_with_encoding(data: &[u8], encoding: TextEncoding) -> Result<
         if start < pos
         {
             let text = decode_text_with_encoding_simple(&data[start..pos], encoding)?;
-            if !text.is_empty()
+            if text.is_empty() == false
             {
                 strings.push(text);
             }
@@ -109,7 +109,7 @@ pub fn decode_text_with_encoding(data: &[u8], encoding: TextEncoding) -> Result<
             if pos < data.len()
             {
                 let text = decode_text_with_encoding_simple(&data[pos..], encoding)?;
-                if !text.is_empty()
+                if text.is_empty() == false
                 {
                     strings.push(text);
                 }
@@ -184,7 +184,7 @@ pub fn is_null_terminator(bytes: &[u8], encoding: TextEncoding) -> bool
 {
     match encoding
     {
-        | TextEncoding::Iso88591 | TextEncoding::Utf8 => bytes.len() >= 1 && bytes[0] == 0,
+        | TextEncoding::Iso88591 | TextEncoding::Utf8 => !bytes.is_empty() && bytes[0] == 0,
         | TextEncoding::Utf16Bom | TextEncoding::Utf16Be => bytes.len() >= 2 && bytes[0] == 0 && bytes[1] == 0
     }
 }
@@ -232,7 +232,7 @@ pub fn decode_utf16_string(data: &[u8], encoding: TextEncoding) -> Result<String
     };
 
     let utf16_data = &data[start_pos..];
-    if utf16_data.len() % 2 != 0
+    if utf16_data.len().is_multiple_of(2) == false
     {
         return Err("UTF-16 data length must be even".to_string());
     }

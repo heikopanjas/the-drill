@@ -1,6 +1,6 @@
 use std::fs::File;
 
-use crate::{cli::DebugOptions, media_dissector::MediaDissector};
+use crate::{cli::DissectOptions, media_dissector::MediaDissector};
 
 /// Fallback dissector for unknown file formats
 pub struct UnknownDissector;
@@ -12,7 +12,7 @@ impl MediaDissector for UnknownDissector
         "Unknown"
     }
 
-    fn dissect_with_options(&self, _file: &mut File, _options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    fn dissect_with_options(&self, _file: &mut File, _options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
     {
         println!("Unknown format - no suitable dissector available");
         Ok(())

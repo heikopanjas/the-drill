@@ -86,7 +86,7 @@ impl Id3v2Frame
     pub fn parse_content(&mut self, version_major: u8) -> Result<(), String>
     {
         // Validate that this frame is valid for the given ID3v2 version
-        if !crate::id3v2::tools::is_valid_frame_for_version(&self.id, version_major)
+        if crate::id3v2::tools::is_valid_frame_for_version(&self.id, version_major) == false
         {
             // Invalid frame for this version, store as binary data
             self.content = Some(Id3v2FrameContent::Binary);
@@ -100,7 +100,7 @@ impl Id3v2Frame
             {
                 let text_frame = TextFrame::parse(&self.data)?;
                 // Validate text encoding for this ID3v2 version
-                if !text_frame.encoding.is_valid_for_version(version_major)
+                if text_frame.encoding.is_valid_for_version(version_major) == false
                 {
                     return Err(format!("Text encoding {:?} is not valid for ID3v2.{}", text_frame.encoding, version_major));
                 }
@@ -113,7 +113,7 @@ impl Id3v2Frame
             {
                 let user_text_frame = UserTextFrame::parse(&self.data)?;
                 // Validate text encoding for this ID3v2 version
-                if !user_text_frame.encoding.is_valid_for_version(version_major)
+                if user_text_frame.encoding.is_valid_for_version(version_major) == false
                 {
                     return Err(format!("Text encoding {:?} is not valid for ID3v2.{}", user_text_frame.encoding, version_major));
                 }
@@ -123,7 +123,7 @@ impl Id3v2Frame
             {
                 let user_url_frame = UserUrlFrame::parse(&self.data)?;
                 // Validate text encoding for this ID3v2 version
-                if !user_url_frame.encoding.is_valid_for_version(version_major)
+                if user_url_frame.encoding.is_valid_for_version(version_major) == false
                 {
                     return Err(format!("Text encoding {:?} is not valid for ID3v2.{}", user_url_frame.encoding, version_major));
                 }
@@ -134,7 +134,7 @@ impl Id3v2Frame
             {
                 let comment_frame = CommentFrame::parse(&self.data)?;
                 // Validate text encoding for this ID3v2 version
-                if !comment_frame.encoding.is_valid_for_version(version_major)
+                if comment_frame.encoding.is_valid_for_version(version_major) == false
                 {
                     return Err(format!("Text encoding {:?} is not valid for ID3v2.{}", comment_frame.encoding, version_major));
                 }
@@ -145,7 +145,7 @@ impl Id3v2Frame
             {
                 let picture_frame = AttachedPictureFrame::parse(&self.data)?;
                 // Validate text encoding for this ID3v2 version
-                if !picture_frame.encoding.is_valid_for_version(version_major)
+                if picture_frame.encoding.is_valid_for_version(version_major) == false
                 {
                     return Err(format!("Text encoding {:?} is not valid for ID3v2.{}", picture_frame.encoding, version_major));
                 }
@@ -208,7 +208,7 @@ impl fmt::Display for Id3v2Frame
             let content_str = format!("{}", content);
             for line in content_str.lines()
             {
-                if !line.is_empty()
+                if line.is_empty() == false
                 {
                     writeln!(f, "    {}", line)?;
                 }
@@ -223,26 +223,22 @@ impl fmt::Display for Id3v2Frame
             // Fallback for unparsed content
             if let Some(text) = self.get_text()
             {
-                if !text.is_empty()
+                if text.is_empty() == false
                 {
                     write!(f, " - Text: \"{}\"", text)?;
                 }
             }
-            else if let Some(url) = self.get_url()
+            else if let Some(url) = self.get_url() &&
+                !url.is_empty()
             {
-                if !url.is_empty()
-                {
-                    write!(f, " - URL: \"{}\"", url)?;
-                }
+                write!(f, " - URL: \"{}\"", url)?;
             }
         }
 
-        if let Some(embedded) = &self.embedded_frames
+        if let Some(embedded) = &self.embedded_frames &&
+            !embedded.is_empty()
         {
-            if !embedded.is_empty()
-            {
-                writeln!(f, "    {} embedded sub-frame(s)", embedded.len())?;
-            }
+            writeln!(f, "    {} embedded sub-frame(s)", embedded.len())?;
         }
 
         writeln!(f)?; // Add newline at the end of frame display

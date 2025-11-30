@@ -115,14 +115,7 @@ impl ChapterFrame
     /// Get chapter duration in milliseconds
     pub fn duration(&self) -> u32
     {
-        if self.end_time >= self.start_time
-        {
-            self.end_time - self.start_time
-        }
-        else
-        {
-            0
-        }
+        self.end_time.saturating_sub(self.start_time)
     }
 }
 
@@ -135,11 +128,11 @@ impl fmt::Display for ChapterFrame
         let end_formatted = format_timestamp(self.end_time);
         let duration_formatted = format_timestamp(self.duration());
         writeln!(f, "Time: {} - {} (duration: {})", start_formatted, end_formatted, duration_formatted)?;
-        if self.has_byte_offsets()
+        if self.has_byte_offsets() == true
         {
             writeln!(f, "Byte offsets: {} - {}", self.start_offset, self.end_offset)?;
         }
-        if !self.sub_frames.is_empty()
+        if self.sub_frames.is_empty() == false
         {
             writeln!(f, "Sub-frames: {} embedded frame(s)", self.sub_frames.len())?;
             writeln!(f)?; // Add newline before first embedded frame
@@ -163,7 +156,7 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
 {
     // Use the new unified frame header display function
     let mut buffer = Vec::new();
-    if let Err(_) = crate::id3v2::tools::display_frame_header(&mut buffer, frame, "        ")
+    if crate::id3v2::tools::display_frame_header(&mut buffer, frame, "        ").is_err()
     {
         // Fallback to basic display if header function fails
         writeln!(f, "        Frame: {} - Size: {} bytes", frame.id, frame.size)?;
@@ -186,7 +179,7 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
         let content_str = format!("{}", content);
         for line in content_str.lines()
         {
-            if !line.is_empty()
+            if line.is_empty() == false
             {
                 writeln!(f, "            {}", line)?;
             }
@@ -201,7 +194,7 @@ pub fn display_embedded_frame_content(f: &mut fmt::Formatter<'_>, frame: &Id3v2F
         // Fallback for unparsed frames
         if let Some(text) = frame.get_text()
         {
-            if !text.is_empty()
+            if text.is_empty() == false
             {
                 writeln!(f, "            Text: \"{}\"", text)?;
             }
@@ -236,7 +229,7 @@ pub fn display_embedded_frame_with_dump(frame: &Id3v2Frame, indent: &str) -> Str
         let content_str = format!("{}", content);
         for line in content_str.lines()
         {
-            if !line.is_empty()
+            if line.is_empty() == false
             {
                 output.push_str(&format!("{}    {}\n", indent, line));
             }
@@ -251,7 +244,7 @@ pub fn display_embedded_frame_with_dump(frame: &Id3v2Frame, indent: &str) -> Str
         // Fallback for unparsed frames
         if let Some(text) = frame.get_text()
         {
-            if !text.is_empty()
+            if text.is_empty() == false
             {
                 output.push_str(&format!("{}    Text: \"{}\"\n", indent, text));
             }

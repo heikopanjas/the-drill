@@ -7,7 +7,7 @@ use std::{
 use owo_colors::OwoColorize;
 
 use crate::{
-    cli::DebugOptions,
+    cli::DissectOptions,
     isobmff::{r#box::IsobmffBox, content::*, itunes_metadata::ItunesMetadata},
     media_dissector::MediaDissector
 };
@@ -46,7 +46,7 @@ impl IsobmffBox
     fn fmt_with_indent_and_options(&self, f: &mut fmt::Formatter<'_>, indent: usize, verbose: bool, show_dump: bool) -> fmt::Result
     {
         // Skip certain technical boxes unless verbose mode is enabled
-        if !verbose && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64")
+        if verbose == false && matches!(self.box_type.as_str(), "mdat" | "free" | "stts" | "stsc" | "stsz" | "stco" | "co64" | "ctts")
         {
             return Ok(());
         }
@@ -57,7 +57,7 @@ impl IsobmffBox
         let box_info = format!("'{}' ({})", self.box_type, self.get_description());
 
         // Color code based on box type
-        if self.is_container
+        if self.is_container == true
         {
             writeln!(f, "{}Box at offset 0x{:08X}: {} - Size: {} bytes", indent_str, self.offset, box_info.cyan(), self.size)?;
         }
@@ -112,7 +112,7 @@ impl IsobmffBox
         }
 
         // Display children for container boxes
-        if self.is_container && !self.children.is_empty()
+        if self.is_container == true && self.children.is_empty() == false
         {
             for child in &self.children
             {
@@ -257,7 +257,7 @@ impl IsobmffDissector
             let mut isobmff_box = IsobmffBox::new(current_offset, box_type.clone(), box_size, header_size);
 
             // Parse container contents or read data
-            if isobmff_box.is_container
+            if isobmff_box.is_container == true
             {
                 let mut content_start = current_offset + header_size;
                 let content_end = current_offset + box_size;
@@ -280,16 +280,14 @@ impl IsobmffDissector
                 if Self::is_itunes_metadata_box(&box_type)
                 {
                     // Look for 'data' child box
-                    if let Some(data_box) = isobmff_box.children.iter().find(|child| child.box_type == "data")
+                    if let Some(data_box) = isobmff_box.children.iter().find(|child| child.box_type == "data") &&
+                        !data_box.data.is_empty()
                     {
-                        if !data_box.data.is_empty()
+                        match ItunesMetadata::parse(&box_type, &data_box.data)
                         {
-                            match ItunesMetadata::parse(&box_type, &data_box.data)
-                            {
-                                | Ok(metadata) => isobmff_box.itunes_content = Some(metadata),
-                                | Err(_) =>
-                                {} // Ignore parsing errors for now
-                            }
+                            | Ok(metadata) => isobmff_box.itunes_content = Some(metadata),
+                            | Err(_) =>
+                            {} // Ignore parsing errors for now
                         }
                     }
                 }
@@ -358,7 +356,7 @@ impl MediaDissector for IsobmffDissector
         "ISO Base Media File Format Dissector"
     }
 
-    fn dissect_with_options(&self, file: &mut File, options: &DebugOptions) -> Result<(), Box<dyn std::error::Error>>
+    fn dissect_with_options(&self, file: &mut File, options: &DissectOptions) -> Result<(), Box<dyn std::error::Error>>
     {
         let file_size = file.metadata()?.len();
 
@@ -366,7 +364,7 @@ impl MediaDissector for IsobmffDissector
         let boxes = Self::parse_boxes(file, 0, file_size, 0).map_err(|e| format!("Failed to parse ISOBMFF boxes: {}", e))?;
 
         // Header information
-        if options.show_header
+        if options.show_header == true
         {
             println!("\n{}", "ISO Base Media File Format Header:".bright_cyan().bold());
 
@@ -381,7 +379,7 @@ impl MediaDissector for IsobmffDissector
         }
 
         // Boxes/structure information
-        if options.show_data
+        if options.show_data == true
         {
             println!("{}\n", "Box Structure:".bright_cyan().bold());
 

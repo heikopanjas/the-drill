@@ -129,7 +129,7 @@ impl fmt::Display for TableOfContentsFrame
         }
         writeln!(f)?; // End the line after all child elements
 
-        if self.has_sub_frames()
+        if self.has_sub_frames() == true
         {
             writeln!(f, "Sub-frames: {} embedded frame(s)", self.sub_frames.len())?;
             writeln!(f)?; // Add newline before first embedded frame
