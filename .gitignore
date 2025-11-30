@@ -3,7 +3,6 @@
 
 # Cargo build artifacts
 target/
-Cargo.lock
 
 # Backup files
 **/*.rs.bk

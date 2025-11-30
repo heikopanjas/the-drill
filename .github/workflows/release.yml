@@ -50,10 +50,12 @@ jobs:
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@nightly
-        with:
-          targets: |
-            x86_64-apple-darwin
-            aarch64-apple-darwin
+
+      - name: Add macOS targets
+        if: matrix.os == 'macos-latest'
+        run: |
+          rustup target add x86_64-apple-darwin
+          rustup target add aarch64-apple-darwin
 
       - name: Cache dependencies
         uses: actions/cache@v4
