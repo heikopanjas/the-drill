@@ -1,104 +1,124 @@
 name: Release
 
 on:
-    push:
-        tags:
-            - 'v[0-9]+.[0-9]+.[0-9]+*' # Matches v1.0.0, v1.0.0-alpha, v1.0.0-beta.1, etc.
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 env:
-    CARGO_TERM_COLOR: always
+  CARGO_TERM_COLOR: always
 
 jobs:
-    build:
-        name: Build Release Binaries
-        strategy:
-            matrix:
-                include:
-                    - os: ubuntu-latest
-                      target: x86_64-unknown-linux-gnu
-                      name: the-drill-${{ github.ref_name }}-linux
-                    - os: windows-latest
-                      target: x86_64-pc-windows-msvc
-                      name: the-drill-${{ github.ref_name }}-windows.exe
-                    - os: macos-latest
-                      target: universal-apple-darwin
-                      name: the-drill-${{ github.ref_name }}-macos
-        runs-on: ${{ matrix.os }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+  verify-branch:
+    name: Verify Main Branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-            - name: Install Rust toolchain
-              uses: dtolnay/rust-toolchain@nightly
-              with:
-                  targets: |
-                      x86_64-apple-darwin
-                      aarch64-apple-darwin
+      - name: Verify tag is on main branch
+        run: |
+          if ! git branch -r --contains ${{ github.sha }} | grep -q "origin/main"; then
+              echo "Error: Release tags must be on the main branch"
+              echo "This tag is on:"
+              git branch -r --contains ${{ github.sha }}
+              exit 1
+          fi
+          echo "Verified: tag is on main branch"
 
-            - name: Cache dependencies
-              uses: actions/cache@v4
-              with:
-                  path: |
-                      ~/.cargo/registry
-                      ~/.cargo/git
-                      target
-                  key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+  build:
+    name: Build Release Binaries
+    needs: verify-branch
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            name: the-drill-${{ github.ref_name }}-linux
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: the-drill-${{ github.ref_name }}-windows.exe
+          - os: macos-latest
+            target: universal-apple-darwin
+            name: the-drill-${{ github.ref_name }}-macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-            - name: Build binary (Linux/Windows)
-              if: matrix.target != 'universal-apple-darwin'
-              run: cargo build --release --target ${{ matrix.target }}
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: |
+            x86_64-apple-darwin
+            aarch64-apple-darwin
 
-            - name: Build universal binary (macOS)
-              if: matrix.target == 'universal-apple-darwin'
-              run: |
-                  cargo build --release --target x86_64-apple-darwin
-                  cargo build --release --target aarch64-apple-darwin
-                  lipo -create -output the-drill-universal \
-                      target/x86_64-apple-darwin/release/the-drill \
-                      target/aarch64-apple-darwin/release/the-drill
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-            - name: Prepare binary (Linux)
-              if: matrix.os == 'ubuntu-latest'
-              run: cp target/${{ matrix.target }}/release/the-drill ${{ matrix.name }}
+      - name: Build binary (Linux/Windows)
+        if: matrix.target != 'universal-apple-darwin'
+        run: cargo build --release --target ${{ matrix.target }}
 
-            - name: Prepare binary (Windows)
-              if: matrix.os == 'windows-latest'
-              run: cp target/${{ matrix.target }}/release/the-drill.exe ${{ matrix.name }}
+      - name: Build universal binary (macOS)
+        if: matrix.target == 'universal-apple-darwin'
+        run: |
+          cargo build --release --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          lipo -create -output the-drill-universal \
+              target/x86_64-apple-darwin/release/the-drill \
+              target/aarch64-apple-darwin/release/the-drill
 
-            - name: Prepare binary (macOS Universal)
-              if: matrix.target == 'universal-apple-darwin'
-              run: cp the-drill-universal ${{ matrix.name }}
+      - name: Prepare binary (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: cp target/${{ matrix.target }}/release/the-drill ${{ matrix.name }}
 
-            - name: Upload binary artifact
-              uses: actions/upload-artifact@v4
-              with:
-                  name: ${{ matrix.name }}
-                  path: ${{ matrix.name }}
+      - name: Prepare binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: cp target/${{ matrix.target }}/release/the-drill.exe ${{ matrix.name }}
 
-    release:
-        name: Create Release
-        needs: build
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+      - name: Prepare binary (macOS Universal)
+        if: matrix.target == 'universal-apple-darwin'
+        run: cp the-drill-universal ${{ matrix.name }}
 
-            - name: Download all artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  path: artifacts
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.name }}
 
-            - name: Create release
-              uses: softprops/action-gh-release@v1
-              with:
-                  files: |
-                      artifacts/the-drill-${{ github.ref_name }}-linux/the-drill-${{ github.ref_name }}-linux
-                      artifacts/the-drill-${{ github.ref_name }}-windows.exe/the-drill-${{ github.ref_name }}-windows.exe
-                      artifacts/the-drill-${{ github.ref_name }}-macos/the-drill-${{ github.ref_name }}-macos
-                  generate_release_notes: true
-                  draft: false
-                  prerelease: ${{ contains(github.ref_name, '-') }}
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/the-drill-${{ github.ref_name }}-linux/the-drill-${{ github.ref_name }}-linux
+            artifacts/the-drill-${{ github.ref_name }}-windows.exe/the-drill-${{ github.ref_name }}-windows.exe
+            artifacts/the-drill-${{ github.ref_name }}-macos/the-drill-${{ github.ref_name }}-macos
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
